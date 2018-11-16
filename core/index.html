@@ -34,51 +34,15 @@
         var canvas = document.getElementById("renderCanvas");
         var engine = new BABYLON.Engine(canvas);
 
-        BABYLON.SceneLoader.Load("../assets/", "Espilit.binary.babylon", engine, function (scene) {
-            scene.activeCamera.attachControl(canvas);
+        BABYLON.SceneLoader.Load("../assets/", "level0.babylon", engine, function (scene) {
+//debugger;
+            var main = new BABYLON.Main(scene);
+            main.createMeshes();
 
-            // var camera = new BABYLON.FreeCamera("camera", new BABYLON.Vector3(15, 15, 15), scene);
-            // camera.setTarget(BABYLON.Vector3.Zero());
-            // camera.attachControl(canvas);
-            
-            var light = new BABYLON.PointLight("light", new BABYLON.Vector3(15, 15, 15), scene);
             
             engine.runRenderLoop(function() {
                 scene.render();
             });
-        });
-
-        
-
-
-        // var cube = BABYLON.Mesh.CreateBox("cube", 4.0, scene);
-        // cube.position.y = 2;
-
-        //var ground = BABYLON.Mesh.CreateGround("ground", 300, 300, 32, scene);
-
-        // var material = new BABYLON.StandardMaterial("material", scene);
-        // material.diffuseColor = new BABYLON.Color3(1.0, 0.0, 0.0);
-        // cube.material = material;
-
-        // interactions
-        // var interactions = new BABYLON.Interactions(scene);
-        // interactions.setupCollisions();
-        // interactions.createActions();
-        // interactions.setupPhysics();
-
-        // Skybox
-        // var skybox = BABYLON.Mesh.CreateBox("skybox", 1000.0, scene);
-        // var material = new BABYLON.StandardMaterial("skyboxMaterial", scene);
-        // material.backFaceCulling = false;
-        // material.disableLighting = true;
-        // skybox.material = material;
-
-        // var texture = new BABYLON.CubeTexture("../assets/TropicalSunnyDay", scene);
-        // material.reflectionTexture = texture;
-        // material.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
-
-        engine.runRenderLoop(function() {
-            scene.render();
         });
     </script>
 

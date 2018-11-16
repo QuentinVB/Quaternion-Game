@@ -17,7 +17,7 @@ Projet de jeu vidéo inspiré de PEZ dans le cadre du TP sur Bablyon JS à IN'TE
 
 ## Runs
 1. setup serveur node de travail ✓
-2. intégrer le niveau 0
+2. intégrer le niveau 0 ✓
 3. création personnage
 4. gestion déplacement du personnage
 - g/d = déplacement
@@ -27,3 +27,5 @@ Projet de jeu vidéo inspiré de PEZ dans le cadre du TP sur Bablyon JS à IN'TE
 6. rotation caméra
 7. détection levier
 8. musique et son
+9. refonte graphique niveau
+10. intégrer niveau 1
