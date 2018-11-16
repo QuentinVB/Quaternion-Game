@@ -1,0 +1,22 @@
+{
+  "name": "quaternion-game",
+  "version": "1.0.0",
+  "description": "Babylon.js Courses",
+  "repository": {
+    "url": "https://github.com/julien-moreau/learning.git"
+  },
+  "author": {
+    "name": "Quentin Vanbutsele",
+    "url": "https://les-planetes2kentin.fr"
+  },
+  "scripts": {
+    "webserver": "http-server -p 1337",
+    "build": "tsc -p .",
+    "watch": "tsc -p . --watch"
+  },
+  "devDependencies": {
+    "http-server": "^0.9.0",
+    "typescript": "~3.0.1"
+  },
+  "dependencies": {}
+}
