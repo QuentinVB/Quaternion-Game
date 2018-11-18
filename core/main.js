@@ -30,16 +30,29 @@ var BABYLON;
         };
         // Setup physics
         Main.prototype.setupPhysics = function () {
+            //character
             this.scene.enablePhysics(new BABYLON.Vector3(0, -9.81, 0), new BABYLON.CannonJSPlugin());
             this._character.position.y += 0.5;
-            this._character.physicsImpostor = new BABYLON.PhysicsImpostor(this._character, BABYLON.PhysicsImpostor.SphereImpostor, {
+            this._character.physicsImpostor = new BABYLON.PhysicsImpostor(this._character, BABYLON.PhysicsImpostor.BoxImpostor, {
                 mass: 1
             });
-            var platforms = this.scene.getMeshByName("platforms");
-            //scene.meshes
-            platforms.physicsImpostor = new BABYLON.PhysicsImpostor(platforms, BABYLON.PhysicsImpostor.BoxImpostor, {
-                mass: 0
+            //env
+            var firstCollider = this.scene.getMeshByName("collide");
+            var collidersChild = firstCollider.getChildMeshes();
+            var colliders = collidersChild.concat([firstCollider]);
+            colliders.forEach(function (collider) {
+                collider.physicsImpostor = new BABYLON.PhysicsImpostor(collider, BABYLON.PhysicsImpostor.BoxImpostor, {
+                    mass: 0
+                });
+                collider.isVisible = false;
             });
+            /*rootCollider.physicsImpostor = new BABYLON.PhysicsImpostor(platforms, BABYLON.PhysicsImpostor.BoxImpostor, {
+                mass: 0
+            });*/
+            //scene.meshes
+            /*platforms.physicsImpostor = new BABYLON.PhysicsImpostor(platforms, BABYLON.PhysicsImpostor.BoxImpostor, {
+                mass: 0
+            });*/
         };
         return Main;
     }());

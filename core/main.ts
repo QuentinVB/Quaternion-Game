@@ -39,17 +39,30 @@ module BABYLON {
 
         // Setup physics
         public setupPhysics () :void {
+            //character
             this.scene.enablePhysics(new Vector3(0, -9.81, 0), new CannonJSPlugin());
             this._character.position.y += 0.5;
-            this._character.physicsImpostor = new PhysicsImpostor(this._character, PhysicsImpostor.SphereImpostor, {
+            this._character.physicsImpostor = new PhysicsImpostor(this._character, PhysicsImpostor.BoxImpostor, {
                 mass: 1
             });
-            var platforms = this.scene.getMeshByName("platforms");
-            //scene.meshes
-            platforms.physicsImpostor = new PhysicsImpostor(platforms, PhysicsImpostor.BoxImpostor,
-                {
-                    mass:0
+            //env
+            var firstCollider = this.scene.getMeshByName("collide");
+            var collidersChild = firstCollider.getChildMeshes();
+            var colliders=[...collidersChild,firstCollider];
+            colliders.forEach(collider => {
+                collider.physicsImpostor = new BABYLON.PhysicsImpostor(collider, BABYLON.PhysicsImpostor.BoxImpostor, {
+                    mass: 0
                 });
+                collider.isVisible = false;
+            });
+
+            /*rootCollider.physicsImpostor = new BABYLON.PhysicsImpostor(platforms, BABYLON.PhysicsImpostor.BoxImpostor, {
+                mass: 0
+            });*/
+            //scene.meshes
+            /*platforms.physicsImpostor = new BABYLON.PhysicsImpostor(platforms, BABYLON.PhysicsImpostor.BoxImpostor, {
+                mass: 0
+            });*/
         }
     }
 }

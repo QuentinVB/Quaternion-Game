@@ -18,7 +18,7 @@ Projet de jeu vidéo inspiré de PEZ dans le cadre du TP sur Bablyon JS à IN'TE
 ## Runs
 1. setup serveur node de travail ✓
 2. intégrer le niveau 0 ✓
-3. création personnage et physique -> créer un mesh par dessus le mesh initial
+3. création personnage et physique -> créer DES mesh par dessus le mesh initial ✓
 4. gestion déplacement du personnage
 - g/d = déplacement
 - haut = action/changement dimension
