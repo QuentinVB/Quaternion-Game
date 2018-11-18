@@ -1,9 +1,9 @@
 {
   "name": "quaternion-game",
   "version": "1.0.0",
-  "description": "Babylon.js Courses",
+  "description": "Babylon.js Exercice",
   "repository": {
-    "url": "https://github.com/julien-moreau/learning.git"
+    "url": "https://github.com/QuentinVB/Quaternion-Game.git"
   },
   "author": {
     "name": "Quentin Vanbutsele",

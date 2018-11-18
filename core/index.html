@@ -38,7 +38,7 @@
 //debugger;
             var main = new BABYLON.Main(scene);
             main.createMeshes();
-
+            main.setupPhysics();
             
             engine.runRenderLoop(function() {
                 scene.render();
