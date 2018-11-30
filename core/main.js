@@ -109,6 +109,7 @@ var BABYLON;
             //character
             // var centerOfGravity = this._character.position;
             // centerOfGravity.y += 0.4;
+            var strenghtVector = new BABYLON.Vector3(-3, 0, 0);
             this.scene.onKeyboardObservable.add(function (kbInfo) {
                 switch (kbInfo.type) {
                     case BABYLON.KeyboardEventTypes.KEYDOWN:
@@ -135,9 +136,10 @@ var BABYLON;
                                     invertParentWorldMatrix.invert();
                                     var worldPosition = new BABYLON.Vector3(x, y, z);
                                     var position = BABYLON.Vector3.TransformCoordinates(worldPosition, invertParentWorldMatrix);*/
-                                var targetVector = new BABYLON.Vector3(-3, 0, 0);
-                                targetVector.rotateByQuaternionAroundPointToRef(_this._character.rotationQuaternion, _this._character.position, targetVector);
-                                _this._character.physicsImpostor.applyImpulse(targetVector, _this._character.position);
+                                console.log(_this._character.rotation);
+                                //targetVector.rotateByQuaternionAroundPointToRef((new BABYLON.Vector3(0,Math.PI/2,0)).toQuaternion(),this._character.position,targetVector)
+                                console.log(strenghtVector);
+                                _this._character.physicsImpostor.applyImpulse(strenghtVector, _this._character.position);
                                 break;
                             // right arrow
                             case 39:
@@ -148,6 +150,7 @@ var BABYLON;
                                 if (_this.sensorCollide) {
                                     _this._camera.alpha -= Math.PI / 2;
                                     _this._character.rotate(new BABYLON.Vector3(0, 1, 0), Math.PI / 2, BABYLON.Space.LOCAL);
+                                    strenghtVector = BABYLON.Vector3.TransformCoordinates(strenghtVector, BABYLON.Matrix.RotationAxis(BABYLON.Axis.Y, Math.PI / 2));
                                 }
                                 _this.sensorCollide = false;
                                 break;

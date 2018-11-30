@@ -24,7 +24,7 @@ Projet de jeu vidéo inspiré de PEZ dans le cadre du TP sur Bablyon JS à IN'TE
 - haut = jump ✓+ limiteur ✓ 
 - espace = action/changement dimension ✓
 5. rotation caméra ✓
-6. changement dimension
+6. changement dimension ✓
 7. détection levier
 8. musique et son
 9. refonte graphique niveau
