@@ -39,6 +39,7 @@
             var main = new BABYLON.Main(scene);
             main.createMeshes();
             main.setupPhysics();
+            main.setupCollisions();
             main.setupActions();
             
             engine.runRenderLoop(function() {
