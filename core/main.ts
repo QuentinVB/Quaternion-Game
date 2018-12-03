@@ -5,15 +5,14 @@ module BABYLON {
 
         private _camera: ArcFollowCamera = null;
         private _character: Mesh = null;
-        private _sensors: AbstractMesh[]= null;
         private _colliders: AbstractMesh[]= null;
-        private groundCollide:boolean = true;
-        private sensorActive: AbstractMesh =null;
         private readonly MAX_VELOCITY =1.5;
         private readonly TERMINAL_VELOCITY = 20;
         private readonly JUMP_FORCE = 4;
         private readonly SPEED = 3;
         private inputUnlocked = true;
+        private collided:boolean=null;
+        private activeSensor:AbstractMesh=null;
 
         // Constructor
         constructor (scene: Scene) {
@@ -23,14 +22,12 @@ module BABYLON {
         public createMeshes() : void {
             //setup camera
             var cameraStartPosition:Vector3 = this.scene.activeCamera.position;
-            this._camera = new BABYLON.ArcFollowCamera("ArcCamera", Math.PI/2, -Math.PI, 10,this.scene.getMeshByName("collide"), this.scene);
+            this._camera = new BABYLON.ArcFollowCamera("ArcCamera", -Math.PI/2, 0, 10,this.scene.getMeshByName("collide"), this.scene);
             //this._camera.attachControl(this.scene.getEngine().getRenderingCanvas());
-            //this._camera.lowerBetaLimit = (Math.PI / 2) * 0.99;
-            //this._camera.upperBetaLimit = (Math.PI / 2) * 0.99;
             this.scene.activeCamera = this._camera;
 
             //setup character
-            this._character = BABYLON.Mesh.CreateBox("box", 0.5, this.scene);
+            this._character = BABYLON.Mesh.CreateBox("character", 0.5, this.scene);
             this._character.position.set(1.3,2,-1.6);
             var material =  new BABYLON.StandardMaterial("material",this.scene);
             material.diffuseColor = new BABYLON.Color3(0.9,0.2,0);
@@ -40,34 +37,53 @@ module BABYLON {
             this._camera.target=this._character;
             //setup lights
             //var light = new BABYLON.PointLight("light", new BABYLON.Vector3(15, 15, 15), scene);
+            //TEST
+               /*********************************Start World Axes********************/
+    var showAxis = function (size) {
+        var axisX = BABYLON.Mesh.CreateLines("axisX", [
+            BABYLON.Vector3.Zero(), new BABYLON.Vector3(size, 0, 0), new BABYLON.Vector3(size * 0.95, 0.05 * size, 0),
+            new BABYLON.Vector3(size, 0, 0), new BABYLON.Vector3(size * 0.95, -0.05 * size, 0)
+        ], this.scene);
+        axisX.color = new BABYLON.Color3(1, 0, 0);
+        var axisY = BABYLON.Mesh.CreateLines("axisY", [
+            BABYLON.Vector3.Zero(), new BABYLON.Vector3(0, size, 0), new BABYLON.Vector3(-0.05 * size, size * 0.95, 0),
+            new BABYLON.Vector3(0, size, 0), new BABYLON.Vector3(0.05 * size, size * 0.95, 0)
+        ], this.scene);
+        axisY.color = new BABYLON.Color3(0, 1, 0);
+        var axisZ = BABYLON.Mesh.CreateLines("axisZ", [
+            BABYLON.Vector3.Zero(), new BABYLON.Vector3(0, 0, size), new BABYLON.Vector3(0, -0.05 * size, size * 0.95),
+            new BABYLON.Vector3(0, 0, size), new BABYLON.Vector3(0, 0.05 * size, size * 0.95)
+        ], this.scene);
+        axisZ.color = new BABYLON.Color3(0, 0, 1);
+    };
+    /***************************End World Axes***************************/
 
+    showAxis(7);
         }
 
         // Create collisions
         public setupCollisions () : void {
-            this._sensors = this.scene.getMeshByName("sensorParent").getChildMeshes();
-
-            //register 
-            this.scene.registerBeforeRender(()=>
-            {
-                this._sensors.forEach(sensor => {
-                    if(this._character.intersectsMesh(sensor,true))
-                    {
-                        this.sensorActive = sensor;
-                        //console.log(this.sensorActive.position);
-                    }
-                });
-                //CALL ONLY ON JUMP; BAKA !
-                if(this.sensorActive != null && !this._character.intersectsMesh(this.sensorActive,true))
+        //this.scene.registerBeforeRender(()=>{});
+           
+        }
+        private checkGroundCollision():boolean
+        {
+            this._colliders.forEach(collider => {
+                if(this._character.intersectsMesh(collider,true))
                 {
-                    this.sensorActive = null;
+                    this.collided = true;
+                    return true; // NO OUTPUT §!%$* !!!
                 }
-                this._colliders.forEach(collider => {
-                    if(this._character.intersectsMesh(collider,true))
-                    {
-                        this.groundCollide=true;
-                    }
-                });
+            });
+            return false;
+        }
+        private checkSensorCollision(): any
+        {
+            this.scene.getMeshByName("sensorParent").getChildMeshes().forEach(sensor => {
+                if(this._character.intersectsMesh(sensor,true))
+                {
+                    this.activeSensor = sensor;
+                }
             });
         }
 
@@ -102,31 +118,11 @@ module BABYLON {
                     friction:1.0
                 });
                 collider.isVisible = false;
-                /*collider.physicsImpostor.registerOnPhysicsCollide(this._character.physicsImpostor, function(main, collided) {
-                    this.groundCollide = true;
-                });*/
             });
         }
         
         // Create actions
         public setupActions () : void {
-            /*
-            this._character.actionManager = new ActionManager(this.scene);
-            this._character.actionManager.registerAction(new ExecuteCodeAction(
-                {
-                    trigger: BABYLON.ActionManager.OnKeyUpTrigger,
-                    parameter: 'r'
-                },
-                (event) =>{
-                    console.log("ping");
-                    var direction = new Vector3(1,0,0);
-                    this._character.applyImpulse(direction,Vector3.Zero());
-                }
-            ));*/
-            //character
-            // var centerOfGravity = this._character.position;
-            // centerOfGravity.y += 0.4;
-            //this._character.moveWithCollisions()
             var strentghVector = new BABYLON.Vector3(-this.SPEED,0,0);
             const rotateAnimation = new Animation('rotation','alpha',25,Animation.ANIMATIONTYPE_FLOAT,Animation.ANIMATIONLOOPMODE_RELATIVE);
 
@@ -137,15 +133,13 @@ module BABYLON {
                         switch (kbInfo.event.keyCode) {
                             // up arrow
                             case 38: 
-                                //console.log(this.groundCollide);
-                                if(this.groundCollide) 
-                                {this._character.applyImpulse(new Vector3(0,this.JUMP_FORCE,0),this._character.position);
-                                this.groundCollide =false;}
+                                this.checkGroundCollision();
+                                if(this.collided) {
+                                    this._character.applyImpulse(new Vector3(0,this.JUMP_FORCE,0),this._character.position);
+                                    this.collided = false;
+                                }
                             break;
-                            // down arrow
-                            case 40:
-                                //this._character.position.y -= 0.1;
-                            break;
+                            // down arrow 40
                             // left arrow
                             case 37:
                                 this._character.physicsImpostor.applyImpulse(strentghVector,this._character.position);
@@ -154,23 +148,27 @@ module BABYLON {
                             case 39:
                                 this._character.physicsImpostor.applyImpulse(BABYLON.Vector3.TransformCoordinates(strentghVector, BABYLON.Matrix.RotationAxis(BABYLON.Axis.Y, Math.PI)),this._character.position);
                             break;
-                            //DEBBUG 
+                            //spaceBar
                             case 32:
-                                if(this.sensorActive)
+                                this.checkSensorCollision();
+                                if(this.activeSensor)
                                 {
-                                    // this.getRotationSignFromSensor()*
-                                    var rotationAngle = -Math.PI/2;
-                                    console.log(rotationAngle);
+                                    //ROTATE CAMERA BASED ON THE POSITION OF THE SENSOR
+                                    // this.getRotationSignFromSensor(this.activeSensor)*
+                                    var rotationAngle =  this.getRotationSignFromSensor(this.activeSensor)*Math.PI/2;
+                                    //console.log(rotationAngle);
                                     this.inputUnlocked = false;
                                     rotateAnimation.setKeys([
                                         {frame: 0, value:this._camera.alpha},
                                         {frame: 30, value:this._camera.alpha+rotationAngle},
                                     ]);
                                     this.scene.beginDirectAnimation(this._camera, [rotateAnimation],0,30,false, 1.0,()=>{this.inputUnlocked= true;});
+                                    //ROTATE CHARACTER
                                     this._character.rotate(new BABYLON.Vector3(0,1,0),Math.PI/2,BABYLON.Space.LOCAL);
+                                    //ROTATE DIRECTIONAL VECTOR
                                     strentghVector = BABYLON.Vector3.TransformCoordinates(strentghVector, BABYLON.Matrix.RotationAxis(BABYLON.Axis.Y, Math.PI / 2));
+                                    this.activeSensor = null;
                                 }
-                                //this.sensorActive=null;
                             break;
                         }
                     break;
@@ -180,38 +178,34 @@ module BABYLON {
         
         }
         //return a rad angle based on
-        private getRotationSignFromSensor() :int
+        private getRotationSignFromSensor(sensor:AbstractMesh) :int
         {
-            const x =this.sensorActive.position.x;
-            const z = this.sensorActive.position.z;
-            const alpha = this._camera.alpha;
-            console.log(x, z, alpha);
-            //1
-            if(alpha==0)
+            const x =sensor.position.x;
+            const z = sensor.position.z;
+            const alpha = this._camera.alpha%(2*Math.PI);
+            //console.log(x, z, alpha);
+            console.log(x,z,alpha);
+            if(alpha==0 || alpha==-Math.PI)
             {
-                if(x > 0 && z<0 ) return -1;//D
-                if(x > 0 && z>0 ) return +1;//A
+                if(x < 0 && z < 0 ) return -1;//A
+                if(x < 0 && z > 0 ) return +1;//A
             }
-            //2
             if(alpha == Math.PI/2)
             {
-                console.log("ping");
-                if(x > 0 && z > 0 ) return -1;//A
-                if(x < 0 && z>0) return +1;//B
+                if(x > 0 && z < 0 ) return +1;//B
+                if(x > 0 && z > 0 ) return -1;//C
             }
-            //3
             if(alpha ==Math.PI)
             {
-                if(x < 0 && z>0) return -1;//B
-                if(x < 0 && z<0 ) return +1//C
+                if(x > 0 && z > 0 ) return +1;//C
+                if(x < 0 && z > 0 ) return -1;//D
             }
-            //4
-            if(alpha ==-Math.PI/2)
+            if(alpha == 3*Math.PI/2)
             {
-                if(x < 0 && z<0 ) return -1;//C
-                if(x > 0 && z<0 ) return +1;//D
+                if(x < 0 && z > 0 ) return +1;//D
+                if(x < 0 && z < 0 ) return -1;//A
             }
-            //return 1;
+            return 1;
         }
     }
 }
