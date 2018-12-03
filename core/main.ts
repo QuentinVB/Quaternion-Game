@@ -8,9 +8,12 @@ module BABYLON {
         private _sensors: AbstractMesh[]= null;
         private _colliders: AbstractMesh[]= null;
         private groundCollide:boolean = true;
-        private sensorCollide:boolean = false;
-        private readonly MAX_SPEED =1.5;
-        private readonly TERMINAL_VELOCITY =20;
+        private sensorActive: AbstractMesh =null;
+        private readonly MAX_VELOCITY =1.5;
+        private readonly TERMINAL_VELOCITY = 20;
+        private readonly JUMP_FORCE = 4;
+        private readonly SPEED = 3;
+        private inputUnlocked = true;
 
         // Constructor
         constructor (scene: Scene) {
@@ -47,20 +50,24 @@ module BABYLON {
             //register 
             this.scene.registerBeforeRender(()=>
             {
-                
                 this._sensors.forEach(sensor => {
                     if(this._character.intersectsMesh(sensor,true))
                     {
-                        this.sensorCollide=true;
+                        this.sensorActive = sensor;
+                        //console.log(this.sensorActive.position);
                     }
                 });
+                //CALL ONLY ON JUMP; BAKA !
+                if(this.sensorActive != null && !this._character.intersectsMesh(this.sensorActive,true))
+                {
+                    this.sensorActive = null;
+                }
                 this._colliders.forEach(collider => {
                     if(this._character.intersectsMesh(collider,true))
                     {
                         this.groundCollide=true;
                     }
                 });
-                
             });
         }
 
@@ -71,28 +78,28 @@ module BABYLON {
             this._character.position.y += 0.5;
             this._character.physicsImpostor = new PhysicsImpostor(this._character, PhysicsImpostor.BoxImpostor, {
                 mass: 1,
-                restitution:0.2
+                restitution:0.2,
+                friction:1.0
             });
+            //lock rotation and clamp velocity
             this._character.getPhysicsImpostor().registerBeforePhysicsStep(impostor =>{
                 impostor.setAngularVelocity(new BABYLON.Vector3(0, 0, 0));
-                //impostor.setLinearVelocity();
-                var x = impostor.getLinearVelocity().x
-                var y = impostor.getLinearVelocity().y
-                var z = impostor.getLinearVelocity().z
-                if(Math.abs(x) > this.MAX_SPEED) x=x>0?this.MAX_SPEED:-this.MAX_SPEED;
-                if(Math.abs(y) > this.TERMINAL_VELOCITY) y=y>0?this.TERMINAL_VELOCITY:-this.TERMINAL_VELOCITY;
-                if(Math.abs(z) > this.MAX_SPEED) z=z>0?this.MAX_SPEED:-this.MAX_SPEED;
-                impostor.setLinearVelocity(new BABYLON.Vector3(x, y, z));
-                //console.log(impostor.getLinearVelocity());
+                impostor.setLinearVelocity(
+                    new BABYLON.Vector3(
+                        BABYLON.Scalar.Clamp(impostor.getLinearVelocity().x,-this.MAX_VELOCITY,this.MAX_VELOCITY),
+                        BABYLON.Scalar.Clamp(impostor.getLinearVelocity().y,-this.TERMINAL_VELOCITY,this.TERMINAL_VELOCITY),
+                        BABYLON.Scalar.Clamp(impostor.getLinearVelocity().z,-this.MAX_VELOCITY,this.MAX_VELOCITY)
+                ));
             });
             
-            //env
+            //setup collisions box decor
             var firstCollider = this.scene.getMeshByName("collide");
             var collidersChild = firstCollider.getChildMeshes();
             this._colliders=[...collidersChild,firstCollider];
             this._colliders.forEach(collider => {
                 collider.physicsImpostor = new BABYLON.PhysicsImpostor(collider, BABYLON.PhysicsImpostor.BoxImpostor, {
-                    mass: 0
+                    mass: 0,
+                    friction:1.0
                 });
                 collider.isVisible = false;
                 /*collider.physicsImpostor.registerOnPhysicsCollide(this._character.physicsImpostor, function(main, collided) {
@@ -100,6 +107,7 @@ module BABYLON {
                 });*/
             });
         }
+        
         // Create actions
         public setupActions () : void {
             /*
@@ -118,20 +126,20 @@ module BABYLON {
             //character
             // var centerOfGravity = this._character.position;
             // centerOfGravity.y += 0.4;
-            var strenghtVector = new BABYLON.Vector3(-3,0,0);
+            //this._character.moveWithCollisions()
+            var strentghVector = new BABYLON.Vector3(-this.SPEED,0,0);
+            const rotateAnimation = new Animation('rotation','alpha',25,Animation.ANIMATIONTYPE_FLOAT,Animation.ANIMATIONLOOPMODE_RELATIVE);
 
             this.scene.onKeyboardObservable.add((kbInfo) => {
+                if(this.inputUnlocked){
                 switch (kbInfo.type) {
                     case BABYLON.KeyboardEventTypes.KEYDOWN:
-                        //var x = 0;
-                        //var y = 0;
                         switch (kbInfo.event.keyCode) {
                             // up arrow
-                            case 38:
-                            //this._character.moveWithCollisions()
-                                console.log(this.groundCollide);
+                            case 38: 
+                                //console.log(this.groundCollide);
                                 if(this.groundCollide) 
-                                {this._character.applyImpulse(new Vector3(0,5,0),this._character.position);
+                                {this._character.applyImpulse(new Vector3(0,this.JUMP_FORCE,0),this._character.position);
                                 this.groundCollide =false;}
                             break;
                             // down arrow
@@ -140,49 +148,70 @@ module BABYLON {
                             break;
                             // left arrow
                             case 37:
-                            /*
-                                var invertParentWorldMatrix = this._character.getWorldMatrix().clone();
-                                invertParentWorldMatrix.invert();
-                                var worldPosition = new BABYLON.Vector3(x, y, z);
-                                var position = BABYLON.Vector3.TransformCoordinates(worldPosition, invertParentWorldMatrix);*/
-
-                                
-                                
-                                console.log(this._character.rotation);
-                                //targetVector.rotateByQuaternionAroundPointToRef((new BABYLON.Vector3(0,Math.PI/2,0)).toQuaternion(),this._character.position,targetVector)
-                                console.log(strenghtVector);
-                                this._character.physicsImpostor.applyImpulse(strenghtVector,this._character.position);
+                                this._character.physicsImpostor.applyImpulse(strentghVector,this._character.position);
                             break;
                             // right arrow
                             case 39:
-                                this._character.locallyTranslate(new BABYLON.Vector3(0.08,0,0));
+                                this._character.physicsImpostor.applyImpulse(BABYLON.Vector3.TransformCoordinates(strentghVector, BABYLON.Matrix.RotationAxis(BABYLON.Axis.Y, Math.PI)),this._character.position);
                             break;
                             //DEBBUG 
                             case 32:
-                                if(this.sensorCollide)
+                                if(this.sensorActive)
                                 {
-                                    this._camera.alpha-=Math.PI/2;
+                                    // this.getRotationSignFromSensor()*
+                                    var rotationAngle = -Math.PI/2;
+                                    console.log(rotationAngle);
+                                    this.inputUnlocked = false;
+                                    rotateAnimation.setKeys([
+                                        {frame: 0, value:this._camera.alpha},
+                                        {frame: 30, value:this._camera.alpha+rotationAngle},
+                                    ]);
+                                    this.scene.beginDirectAnimation(this._camera, [rotateAnimation],0,30,false, 1.0,()=>{this.inputUnlocked= true;});
                                     this._character.rotate(new BABYLON.Vector3(0,1,0),Math.PI/2,BABYLON.Space.LOCAL);
-                                    strenghtVector = BABYLON.Vector3.TransformCoordinates(strenghtVector, BABYLON.Matrix.RotationAxis(BABYLON.Axis.Y, Math.PI / 2));
-
+                                    strentghVector = BABYLON.Vector3.TransformCoordinates(strentghVector, BABYLON.Matrix.RotationAxis(BABYLON.Axis.Y, Math.PI / 2));
                                 }
-                                this.sensorCollide =false;
-
-                            break;
-                            // a
-                            case 65:
-                                this._camera.alpha-=Math.PI/2;
-                                this._character.rotate(new BABYLON.Vector3(0,1,0),Math.PI/2,BABYLON.Space.LOCAL);
-                            break;
-                            // z
-                            case 90:
-                                this._camera.alpha+=Math.PI/2;
-                                this._character.rotate(new BABYLON.Vector3(0,1,0),-Math.PI/2,BABYLON.Space.LOCAL);
+                                //this.sensorActive=null;
                             break;
                         }
                     break;
                 }
+               } 
             });
+        
+        }
+        //return a rad angle based on
+        private getRotationSignFromSensor() :int
+        {
+            const x =this.sensorActive.position.x;
+            const z = this.sensorActive.position.z;
+            const alpha = this._camera.alpha;
+            console.log(x, z, alpha);
+            //1
+            if(alpha==0)
+            {
+                if(x > 0 && z<0 ) return -1;//D
+                if(x > 0 && z>0 ) return +1;//A
+            }
+            //2
+            if(alpha == Math.PI/2)
+            {
+                console.log("ping");
+                if(x > 0 && z > 0 ) return -1;//A
+                if(x < 0 && z>0) return +1;//B
+            }
+            //3
+            if(alpha ==Math.PI)
+            {
+                if(x < 0 && z>0) return -1;//B
+                if(x < 0 && z<0 ) return +1//C
+            }
+            //4
+            if(alpha ==-Math.PI/2)
+            {
+                if(x < 0 && z<0 ) return -1;//C
+                if(x > 0 && z<0 ) return +1;//D
+            }
+            //return 1;
         }
     }
 }
