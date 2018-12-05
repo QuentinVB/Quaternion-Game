@@ -19,12 +19,15 @@ var BABYLON;
         Main.prototype.createMeshes = function () {
             //setup camera
             var cameraStartPosition = this.scene.activeCamera.position;
-            this._camera = new BABYLON.ArcFollowCamera("ArcCamera", -Math.PI / 2, 0, 10, this.scene.getMeshByName("collide"), this.scene);
+            this._camera = new BABYLON.ArcFollowCamera("ArcCamera", 3 * Math.PI / 2, 0, 10, this.scene.getMeshByName("collide"), this.scene);
             //this._camera.attachControl(this.scene.getEngine().getRenderingCanvas());
             this.scene.activeCamera = this._camera;
             //setup character
             this._character = BABYLON.Mesh.CreateBox("character", 0.5, this.scene);
             this._character.position.set(1.3, 2, -1.6);
+            //var noze = BABYLON.Mesh.CreateBox("characterNoze", 0.3, this.scene);
+            //noze.position.set(1.1,2.3,-1.6);
+            //this._character.addChild(noze);
             var material = new BABYLON.StandardMaterial("material", this.scene);
             material.diffuseColor = new BABYLON.Color3(0.9, 0.2, 0);
             this._character.material = material;
@@ -52,11 +55,25 @@ var BABYLON;
                 axisZ.color = new BABYLON.Color3(0, 0, 1);
             };
             /***************************End World Axes***************************/
-            showAxis(7);
+            //showAxis(7);
         };
         // Create collisions
         Main.prototype.setupCollisions = function () {
-            //this.scene.registerBeforeRender(()=>{});
+            var _this = this;
+            this.scene.registerBeforeRender(function () {
+                if (_this._character.intersectsMesh(_this.scene.getMeshByName("Goal"), true)) {
+                    console.log("YOU WIN");
+                }
+            });
+            /*
+            this.scene.onPointerDown = function (evt, pickResult) {
+            // if the click hits the ground object, we change the impact position
+            if (pickResult.hit) {
+                console.log(" x = "+pickResult.pickedPoint.x+" y = "+pickResult.pickedPoint.z);
+            }*/
+            this.scene.getMeshByName("sensorParent").getChildMeshes().forEach(function (sensor) {
+                sensor.isVisible = false;
+            });
         };
         Main.prototype.checkGroundCollision = function () {
             var _this = this;
@@ -138,7 +155,6 @@ var BABYLON;
                                         //ROTATE CAMERA BASED ON THE POSITION OF THE SENSOR
                                         // this.getRotationSignFromSensor(this.activeSensor)*
                                         var rotationAngle = _this.getRotationSignFromSensor(_this.activeSensor) * Math.PI / 2;
-                                        //console.log(rotationAngle);
                                         _this.inputUnlocked = false;
                                         rotateAnimation.setKeys([
                                             { frame: 0, value: _this._camera.alpha },
@@ -146,9 +162,9 @@ var BABYLON;
                                         ]);
                                         _this.scene.beginDirectAnimation(_this._camera, [rotateAnimation], 0, 30, false, 1.0, function () { _this.inputUnlocked = true; });
                                         //ROTATE CHARACTER
-                                        _this._character.rotate(new BABYLON.Vector3(0, 1, 0), Math.PI / 2, BABYLON.Space.LOCAL);
+                                        _this._character.rotate(new BABYLON.Vector3(0, 1, 0), -rotationAngle, BABYLON.Space.LOCAL);
                                         //ROTATE DIRECTIONAL VECTOR
-                                        strentghVector = BABYLON.Vector3.TransformCoordinates(strentghVector, BABYLON.Matrix.RotationAxis(BABYLON.Axis.Y, Math.PI / 2));
+                                        strentghVector = BABYLON.Vector3.TransformCoordinates(strentghVector, BABYLON.Matrix.RotationAxis(BABYLON.Axis.Y, -rotationAngle));
                                         _this.activeSensor = null;
                                     }
                                     break;
@@ -162,32 +178,30 @@ var BABYLON;
         Main.prototype.getRotationSignFromSensor = function (sensor) {
             var x = sensor.position.x;
             var z = sensor.position.z;
-            var alpha = this._camera.alpha % (2 * Math.PI);
-            //console.log(x, z, alpha);
-            console.log(x, z, alpha);
-            if (alpha == 0 || alpha == -Math.PI) {
-                if (x < 0 && z < 0)
+            var alpha = Math.abs(this._camera.alpha % (2 * Math.PI) < 0 ? this._camera.alpha % (2 * Math.PI) + 2 * Math.PI : this._camera.alpha % (2 * Math.PI));
+            if (alpha == 0 || alpha == 2 * Math.PI) {
+                if (x > 0 && z < 0)
                     return -1; //A
-                if (x < 0 && z > 0)
-                    return +1; //A
+                if (x > 0 && z > 0)
+                    return +1; //B
             }
             if (alpha == Math.PI / 2) {
-                if (x > 0 && z < 0)
-                    return +1; //B
                 if (x > 0 && z > 0)
-                    return -1; //C
-            }
-            if (alpha == Math.PI) {
-                if (x > 0 && z > 0)
+                    return -1; //B
+                if (x < 0 && z > 0)
                     return +1; //C
-                if (x < 0 && z > 0)
-                    return -1; //D
             }
-            if (alpha == 3 * Math.PI / 2) {
+            if (alpha == Math.PI || alpha == -Math.PI) {
                 if (x < 0 && z > 0)
-                    return +1; //D
+                    return -1; //C
                 if (x < 0 && z < 0)
-                    return -1; //A
+                    return +1; //D
+            }
+            if (alpha == 3 * Math.PI / 2 || alpha == -Math.PI / 2) {
+                if (x < 0 && z < 0)
+                    return -1; //D
+                if (x > 0 && z < 0)
+                    return +1; //A
             }
             return 1;
         };

@@ -26,10 +26,12 @@ Projet de jeu vidéo inspiré de PEZ dans le cadre du TP sur Bablyon JS à IN'TE
 5. rotation caméra ✓
 6. changement dimension ✓
 - direction personnage ✓
-- rotation selon le senseur
+- rotation selon le senseur ✓
 7. détection levier
 8. musique et son
 9. refonte graphique niveau
+- ground dead
+- checkpoint
 10. intégrer niveau 1
 
 trought the dark
