@@ -1,7 +1,9 @@
 module BABYLON {
     export class Main {
         // Public members
+        public engine: Engine;
         public scene: Scene;
+
 
         private _camera: ArcFollowCamera = null;
         private _character: Mesh = null;
@@ -13,11 +15,31 @@ module BABYLON {
         private inputUnlocked = true;
         private collided:boolean=null;
         private activeSensor:AbstractMesh=null;
-
+        //private jumpSound = new BABYLON.Sound("Jump", "../assets/boing.mp3", this.scene);
+        //private jumpSound = new BABYLON.Sound("Music", "../assets/boing.mp3", this.scene, null, { loop: true, autoplay: true });
         // Constructor
         constructor (scene: Scene) {
-            this.scene = scene;
+            this.engine = new Engine(<HTMLCanvasElement> document.getElementById('renderCanvas'));
+            
+            BABYLON.SceneLoader.LoadAsync("../assets/", "level0.babylon", this.engine).then(function (scene)
+            {
+                this.scene = scene;
+                this.createMeshes();
+                this.setupPhysics();
+                this.setupCollisions();
+                this.setupActions();
+            });
+
         }
+        /**
+         * Runs the engine to render the scene into the canvas
+         */
+        public run () {
+            this.engine.runRenderLoop(() => {
+                if(this.scene != undefined)this.scene.render();
+            });
+        }
+
         // Create camera
         public createMeshes() : void {
             //setup camera
@@ -136,7 +158,6 @@ module BABYLON {
                 collider.isVisible = false;
             });
         }
-        
         // Create actions
         public setupActions () : void {
             var strentghVector = new BABYLON.Vector3(-this.SPEED,0,0);
@@ -152,6 +173,7 @@ module BABYLON {
                                 this.checkGroundCollision();
                                 if(this.collided) {
                                     this._character.applyImpulse(new Vector3(0,this.JUMP_FORCE,0),this._character.position);
+                                    //this.jumpSound.play();
                                     this.collided = false;
                                 }
                             break;

@@ -1,6 +1,8 @@
 var BABYLON;
 (function (BABYLON) {
     var Main = /** @class */ (function () {
+        //private jumpSound = new BABYLON.Sound("Jump", "../assets/boing.mp3", this.scene);
+        //private jumpSound = new BABYLON.Sound("Music", "../assets/boing.mp3", this.scene, null, { loop: true, autoplay: true });
         // Constructor
         function Main(scene) {
             this._camera = null;
@@ -13,8 +15,25 @@ var BABYLON;
             this.inputUnlocked = true;
             this.collided = null;
             this.activeSensor = null;
-            this.scene = scene;
+            this.engine = new BABYLON.Engine(document.getElementById('renderCanvas'));
+            BABYLON.SceneLoader.LoadAsync("../assets/", "level0.babylon", this.engine).then(function (scene) {
+                this.scene = scene;
+                this.createMeshes();
+                this.setupPhysics();
+                this.setupCollisions();
+                this.setupActions();
+            });
         }
+        /**
+         * Runs the engine to render the scene into the canvas
+         */
+        Main.prototype.run = function () {
+            var _this = this;
+            this.engine.runRenderLoop(function () {
+                if (_this.scene != undefined)
+                    _this.scene.render();
+            });
+        };
         // Create camera
         Main.prototype.createMeshes = function () {
             //setup camera
@@ -136,6 +155,7 @@ var BABYLON;
                                     _this.checkGroundCollision();
                                     if (_this.collided) {
                                         _this._character.applyImpulse(new BABYLON.Vector3(0, _this.JUMP_FORCE, 0), _this._character.position);
+                                        //this.jumpSound.play();
                                         _this.collided = false;
                                     }
                                     break;
@@ -209,4 +229,4 @@ var BABYLON;
     }());
     BABYLON.Main = Main;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=main.js.map
+//# sourceMappingURL=core.js.map
