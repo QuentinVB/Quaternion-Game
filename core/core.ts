@@ -3,8 +3,6 @@ module BABYLON {
         // Public members
         public engine: Engine;
         public scene: Scene;
-
-
         private _camera: ArcFollowCamera = null;
         private _character: Mesh = null;
         private _ground: Mesh = null;
@@ -19,6 +17,7 @@ module BABYLON {
         private collided:boolean=null;
         private activeSensor:AbstractMesh=null;
         private sounds =  [];
+        private fadeLevel = 1.0;
 
         private gameState = "";
 
@@ -33,11 +32,13 @@ module BABYLON {
                 this.setupPhysics();
                 this.setupCollisions();
                 this.setupActions();
+                this.setupPostProcess();
                 this.sounds.push(new BABYLON.Sound("Jump", "../assets/boing.mp3", this.scene));
                 this.sounds.push(new BABYLON.Sound("Win", "../assets/gong.mp3", this.scene));
                 this.sounds.push(new BABYLON.Sound("Lose", "../assets/lose.mp3", this.scene));
-            });
+                this.showAxis(7,this.scene);
 
+            });
         }
         /**
          * Runs the engine to render the scene into the canvas
@@ -52,7 +53,7 @@ module BABYLON {
         public createMeshes() : void {
 
             //setup camera
-            this._camera = new BABYLON.ArcFollowCamera("ArcCamera", ...this.STARTSTATE.camera,this.scene.getMeshByName("collide"), this.scene);
+            this._camera = new BABYLON.ArcFollowCamera("ArcCamera", this.STARTSTATE.camera[0],this.STARTSTATE.camera[1],this.STARTSTATE.camera[2],this.scene.getMeshByName("collide"), this.scene);
             //this._camera.attachControl(this.scene.getEngine().getRenderingCanvas());
             this.scene.activeCamera = this._camera;
 
@@ -69,42 +70,49 @@ module BABYLON {
 
             //link character and camera
             this._camera.target=this._character;
+
             //setup lights
-            //var light = new BABYLON.PointLight("light", new BABYLON.Vector3(15, 15, 15), scene);
+            var light = new BABYLON.PointLight("light", new BABYLON.Vector3(15, 15, 15), this.scene);
 
             //setup ground
             var pillarsize = this.scene.getMeshByName("levelPillar").getBoundingInfo().boundingBox.vectorsWorld; 
             this._ground = <GroundMesh> Mesh.CreateGround('ground', 512, 512, 32, this.scene);
             this._ground.position.set(0,-Number(pillarsize[1].y-(pillarsize[0].y)),0);
             this._ground.isVisible = false;
+            //Setup clouds and floating islands
+            var miscContainer;
+            var plateformSize = this.scene.getMeshByName("platforms").getBoundingInfo().boundingBox.vectorsWorld; 
+            var plateformMaxWidth=Math.max(Number(plateformSize[1].x-(plateformSize[0].x)),Number(plateformSize[1].y-(plateformSize[0].y)));
+            BABYLON.SceneLoader.LoadAssetContainer("../assets/", "misc.babylon", this.scene, (container)=> {
+                miscContainer = container;
+                var startValue = -plateformMaxWidth
+                for (let i = 0; i < 9; i++) {
+                    if(Math.random()>0.5)
+                    {
+                        var position = new BABYLON.Vector3(
+                            BABYLON.Scalar.RandomRange(-10,10),
+                            BABYLON.Scalar.RandomRange(0,2),
+                            BABYLON.Scalar.RandomRange(-10,10)
+                        );
+                        var miscMesh = miscContainer.meshes[Math.round(Math.random()*(miscContainer.meshes.length-1))];
 
-            //TEST
-               /*********************************Start World Axes********************/
-    var showAxis = function (size) {
-        var axisX = BABYLON.Mesh.CreateLines("axisX", [
-            BABYLON.Vector3.Zero(), new BABYLON.Vector3(size, 0, 0), new BABYLON.Vector3(size * 0.95, 0.05 * size, 0),
-            new BABYLON.Vector3(size, 0, 0), new BABYLON.Vector3(size * 0.95, -0.05 * size, 0)
-        ], this.scene);
-        axisX.color = new BABYLON.Color3(1, 0, 0);
-        var axisY = BABYLON.Mesh.CreateLines("axisY", [
-            BABYLON.Vector3.Zero(), new BABYLON.Vector3(0, size, 0), new BABYLON.Vector3(-0.05 * size, size * 0.95, 0),
-            new BABYLON.Vector3(0, size, 0), new BABYLON.Vector3(0.05 * size, size * 0.95, 0)
-        ], this.scene);
-        axisY.color = new BABYLON.Color3(0, 1, 0);
-        var axisZ = BABYLON.Mesh.CreateLines("axisZ", [
-            BABYLON.Vector3.Zero(), new BABYLON.Vector3(0, 0, size), new BABYLON.Vector3(0, -0.05 * size, size * 0.95),
-            new BABYLON.Vector3(0, 0, size), new BABYLON.Vector3(0, 0.05 * size, size * 0.95)
-        ], this.scene);
-        axisZ.color = new BABYLON.Color3(0, 0, 1);
-    };
-    /***************************End World Axes***************************/
-
-    //showAxis(7);
+                        console.log(miscMesh);
+                        miscMesh.position=position;
+                        this.scene.addMesh(miscMesh);
+                    }
+                    
+                }
+            });
+            
+            // miscMeshes = meshes.filter((value)=>{value.name == "cloud"});
+            
         }
 
         // Create collisions
         public setupCollisions () : void {
+            var fadeClock = -1;
             this.scene.registerBeforeRender(()=>{
+                if(fadeClock>-1 && this.fadeLevel>0 ) {this.fadeLevel-=0.01;fadeClock++;}
                 if(this._character.intersectsMesh(this.scene.getMeshByName("Goal"),true))
                 {
                     if(this.gameState !="await") this.gameState = "win";
@@ -117,6 +125,8 @@ module BABYLON {
                 {
                     switch (this.gameState) {
                         case "win":
+                            this.inputUnlocked = false;
+                            fadeClock++;
                             this.scene.getSoundByName("Win").play();
                             this.gameState = "await";
                             break;
@@ -130,7 +140,6 @@ module BABYLON {
                             this._character.rotation.set(0,0,0);
                             this.strentghVector = new BABYLON.Vector3(...this.STARTSTATE.strentgh);
                             this.gameState = "";
-
                             break;
                         default:
                             break;
@@ -289,6 +298,40 @@ module BABYLON {
                 if(x > 0 && z < 0 ) return +1;//A
             }
             return 1;
+        }
+        private setupPostProcess() :void
+        {
+            BABYLON.Effect.ShadersStore["fadePixelShader"] =
+            "precision highp float;" +
+            "varying vec2 vUV;" +
+            "uniform sampler2D textureSampler; " +
+            "uniform float fadeLevel; " +
+            "void main(void){" +
+            "vec4 baseColor = texture2D(textureSampler, vUV) * fadeLevel;" +
+            "baseColor.a = 1.0;" +
+            "gl_FragColor = baseColor;" +
+            "}";
+            var postProcess = new BABYLON.PostProcess("Fade", "fade", ["fadeLevel"], null, 1.0, this._camera);
+            postProcess.onApply = (effect) => {
+                effect.setFloat("fadeLevel", this.fadeLevel);
+            };
+        }
+        public showAxis(size:number,scene:Scene) {
+            var axisX = Mesh.CreateLines("axisX", [
+                Vector3.Zero(), new Vector3(size, 0, 0), new Vector3(size * 0.95, 0.05 * size, 0),
+                new Vector3(size, 0, 0), new Vector3(size * 0.95, -0.05 * size, 0)
+            ], scene);
+            axisX.color = new Color3(1, 0, 0);
+            var axisY = Mesh.CreateLines("axisY", [
+                Vector3.Zero(), new Vector3(0, size, 0), new Vector3(-0.05 * size, size * 0.95, 0),
+                new Vector3(0, size, 0), new Vector3(0.05 * size, size * 0.95, 0)
+            ], scene);
+            axisY.color = new Color3(0, 1, 0);
+            var axisZ = Mesh.CreateLines("axisZ", [
+                Vector3.Zero(), new Vector3(0, 0, size), new Vector3(0, -0.05 * size, size * 0.95),
+                new Vector3(0, 0, size), new Vector3(0, 0.05 * size, size * 0.95)
+            ], scene);
+            axisZ.color = new Color3(0, 0, 1);
         }
     }
 }

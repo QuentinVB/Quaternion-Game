@@ -29,9 +29,11 @@ Projet de jeu vidéo inspiré de PEZ dans le cadre du TP sur Bablyon JS à IN'TE
 - rotation selon le senseur ✓
 7. détection levier
 8. musique et son ✓
-9. refonte graphique niveau
+9. refonte graphique niveau 
 - ground dead ✓
 - checkpoint 
+- nuage et ilot aléatoires ✓
+- masquer les ilots lorsqu'ils sont devant la camera
 10. intégrer niveau 1
 11. loader : (remaining assets- promises chainé)
 12. tuto pour le joueur
