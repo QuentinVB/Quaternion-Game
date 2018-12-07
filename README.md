@@ -28,10 +28,13 @@ Projet de jeu vidéo inspiré de PEZ dans le cadre du TP sur Bablyon JS à IN'TE
 - direction personnage ✓
 - rotation selon le senseur ✓
 7. détection levier
-8. musique et son
+8. musique et son ✓
 9. refonte graphique niveau
-- ground dead
-- checkpoint
+- ground dead ✓
+- checkpoint 
 10. intégrer niveau 1
+11. loader : (remaining assets- promises chainé)
+12. tuto pour le joueur
+13. levelManager
 
 trought the dark

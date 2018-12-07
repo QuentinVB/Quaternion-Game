@@ -7,27 +7,35 @@ module BABYLON {
 
         private _camera: ArcFollowCamera = null;
         private _character: Mesh = null;
+        private _ground: Mesh = null;
         private _colliders: AbstractMesh[]= null;
         private readonly MAX_VELOCITY =1.5;
         private readonly TERMINAL_VELOCITY = 20;
         private readonly JUMP_FORCE = 4;
         private readonly SPEED = 3;
+        private readonly STARTSTATE = {camera:[3*Math.PI/2, 0,10],player: [1.3, 2, -1.6],strentgh:[-this.SPEED,0,0]};
+        private strentghVector;
         private inputUnlocked = true;
         private collided:boolean=null;
         private activeSensor:AbstractMesh=null;
-        //private jumpSound = new BABYLON.Sound("Jump", "../assets/boing.mp3", this.scene);
-        //private jumpSound = new BABYLON.Sound("Music", "../assets/boing.mp3", this.scene, null, { loop: true, autoplay: true });
+        private sounds =  [];
+
+        private gameState = "";
+
         // Constructor
         constructor (scene: Scene) {
             this.engine = new Engine(<HTMLCanvasElement> document.getElementById('renderCanvas'));
             
-            BABYLON.SceneLoader.LoadAsync("../assets/", "level0.babylon", this.engine).then(function (scene)
+            BABYLON.SceneLoader.LoadAsync("../assets/", "level0.babylon", this.engine).then((scene)=>
             {
                 this.scene = scene;
                 this.createMeshes();
                 this.setupPhysics();
                 this.setupCollisions();
                 this.setupActions();
+                this.sounds.push(new BABYLON.Sound("Jump", "../assets/boing.mp3", this.scene));
+                this.sounds.push(new BABYLON.Sound("Win", "../assets/gong.mp3", this.scene));
+                this.sounds.push(new BABYLON.Sound("Lose", "../assets/lose.mp3", this.scene));
             });
 
         }
@@ -42,15 +50,16 @@ module BABYLON {
 
         // Create camera
         public createMeshes() : void {
+
             //setup camera
-            var cameraStartPosition:Vector3 = this.scene.activeCamera.position;
-            this._camera = new BABYLON.ArcFollowCamera("ArcCamera", 3*Math.PI/2, 0, 10,this.scene.getMeshByName("collide"), this.scene);
+            this._camera = new BABYLON.ArcFollowCamera("ArcCamera", ...this.STARTSTATE.camera,this.scene.getMeshByName("collide"), this.scene);
             //this._camera.attachControl(this.scene.getEngine().getRenderingCanvas());
             this.scene.activeCamera = this._camera;
 
             //setup character
             this._character = BABYLON.Mesh.CreateBox("character", 0.5, this.scene);
-            this._character.position.set(1.3,2,-1.6);
+            this._character.position=new BABYLON.Vector3(...this.STARTSTATE.player);
+
             //var noze = BABYLON.Mesh.CreateBox("characterNoze", 0.3, this.scene);
             //noze.position.set(1.1,2.3,-1.6);
             //this._character.addChild(noze);
@@ -62,6 +71,13 @@ module BABYLON {
             this._camera.target=this._character;
             //setup lights
             //var light = new BABYLON.PointLight("light", new BABYLON.Vector3(15, 15, 15), scene);
+
+            //setup ground
+            var pillarsize = this.scene.getMeshByName("levelPillar").getBoundingInfo().boundingBox.vectorsWorld; 
+            this._ground = <GroundMesh> Mesh.CreateGround('ground', 512, 512, 32, this.scene);
+            this._ground.position.set(0,-Number(pillarsize[1].y-(pillarsize[0].y)),0);
+            this._ground.isVisible = false;
+
             //TEST
                /*********************************Start World Axes********************/
     var showAxis = function (size) {
@@ -88,12 +104,39 @@ module BABYLON {
 
         // Create collisions
         public setupCollisions () : void {
-        this.scene.registerBeforeRender(()=>{
-            if(this._character.intersectsMesh(this.scene.getMeshByName("Goal"),true))
+            this.scene.registerBeforeRender(()=>{
+                if(this._character.intersectsMesh(this.scene.getMeshByName("Goal"),true))
                 {
-                    console.log("YOU WIN");
+                    if(this.gameState !="await") this.gameState = "win";
                 }
-        });
+                if(this._character.intersectsMesh(this._ground,true))
+                {
+                    if(this.gameState !="await") this.gameState = "lose";
+                }
+                if(this.gameState)
+                {
+                    switch (this.gameState) {
+                        case "win":
+                            this.scene.getSoundByName("Win").play();
+                            this.gameState = "await";
+                            break;
+                        case "lose":
+                            this.scene.getSoundByName("Lose").play();
+                            this.gameState = "await";
+                            this._camera.alpha = this.STARTSTATE.camera[0];
+                            this._camera.beta = this.STARTSTATE.camera[1];
+                            this._character.position = new BABYLON.Vector3(...this.STARTSTATE.player);
+                            this._character.position.y+=0.2;
+                            this._character.rotation.set(0,0,0);
+                            this.strentghVector = new BABYLON.Vector3(...this.STARTSTATE.strentgh);
+                            this.gameState = "";
+
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            });
             /*
             this.scene.onPointerDown = function (evt, pickResult) {
             // if the click hits the ground object, we change the impact position
@@ -157,10 +200,15 @@ module BABYLON {
                 });
                 collider.isVisible = false;
             });
+
+            //setup ground physic
+            this._ground.physicsImpostor = new PhysicsImpostor(this._ground, PhysicsImpostor.BoxImpostor, {
+                mass: 0
+            });
         }
         // Create actions
         public setupActions () : void {
-            var strentghVector = new BABYLON.Vector3(-this.SPEED,0,0);
+            this.strentghVector = new BABYLON.Vector3(...this.STARTSTATE.strentgh);
             const rotateAnimation = new Animation('rotation','alpha',25,Animation.ANIMATIONTYPE_FLOAT,Animation.ANIMATIONLOOPMODE_RELATIVE);
 
             this.scene.onKeyboardObservable.add((kbInfo) => {
@@ -173,18 +221,18 @@ module BABYLON {
                                 this.checkGroundCollision();
                                 if(this.collided) {
                                     this._character.applyImpulse(new Vector3(0,this.JUMP_FORCE,0),this._character.position);
-                                    //this.jumpSound.play();
+                                    this.scene.getSoundByName("Jump").play();
                                     this.collided = false;
                                 }
                             break;
                             // down arrow 40
                             // left arrow
                             case 37:
-                                this._character.physicsImpostor.applyImpulse(strentghVector,this._character.position);
+                                this._character.physicsImpostor.applyImpulse(this.strentghVector,this._character.position);
                             break;
                             // right arrow
                             case 39:
-                                this._character.physicsImpostor.applyImpulse(BABYLON.Vector3.TransformCoordinates(strentghVector, BABYLON.Matrix.RotationAxis(BABYLON.Axis.Y, Math.PI)),this._character.position);
+                                this._character.physicsImpostor.applyImpulse(BABYLON.Vector3.TransformCoordinates(this.strentghVector, BABYLON.Matrix.RotationAxis(BABYLON.Axis.Y, Math.PI)),this._character.position);
                             break;
                             //spaceBar
                             case 32:
@@ -203,7 +251,7 @@ module BABYLON {
                                     //ROTATE CHARACTER
                                     this._character.rotate(new BABYLON.Vector3(0,1,0),-rotationAngle,BABYLON.Space.LOCAL);
                                     //ROTATE DIRECTIONAL VECTOR
-                                    strentghVector = BABYLON.Vector3.TransformCoordinates(strentghVector, BABYLON.Matrix.RotationAxis(BABYLON.Axis.Y, -rotationAngle));
+                                    this.strentghVector = BABYLON.Vector3.TransformCoordinates(this.strentghVector, BABYLON.Matrix.RotationAxis(BABYLON.Axis.Y, -rotationAngle));
                                     this.activeSensor = null;
                                 }
                             break;
