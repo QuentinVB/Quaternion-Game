@@ -14,8 +14,7 @@ module BABYLON {
         private readonly STARTSTATE = {camera:[3*Math.PI/2, 0,10],player: [1.3, 2, -1.6],strentgh:[-this.SPEED,0,0]};
         private strentghVector;
         private inputUnlocked = true;
-        private collided:boolean=null;
-        private activeSensor:AbstractMesh=null;
+        //private activeSensor:AbstractMesh=null;
         private sounds =  [];
         private fadeLevel = 1.0;
 
@@ -33,11 +32,11 @@ module BABYLON {
                 this.setupCollisions();
                 this.setupActions();
                 this.setupPostProcess();
+                this.setupTutorial();
                 this.sounds.push(new BABYLON.Sound("Jump", "../assets/boing.mp3", this.scene));
                 this.sounds.push(new BABYLON.Sound("Win", "../assets/gong.mp3", this.scene));
                 this.sounds.push(new BABYLON.Sound("Lose", "../assets/lose.mp3", this.scene));
-                this.showAxis(7,this.scene);
-
+                //this.showAxis(7,this.scene);
             });
         }
         /**
@@ -64,7 +63,7 @@ module BABYLON {
             //var noze = BABYLON.Mesh.CreateBox("characterNoze", 0.3, this.scene);
             //noze.position.set(1.1,2.3,-1.6);
             //this._character.addChild(noze);
-            var material =  new BABYLON.StandardMaterial("material",this.scene);
+            let material =  new BABYLON.StandardMaterial("material",this.scene);
             material.diffuseColor = new BABYLON.Color3(0.9,0.2,0);
             this._character.material = material;
 
@@ -72,13 +71,24 @@ module BABYLON {
             this._camera.target=this._character;
 
             //setup lights
-            var light = new BABYLON.PointLight("light", new BABYLON.Vector3(15, 15, 15), this.scene);
+            //var light = new BABYLON.PointLight("light", new BABYLON.Vector3(15, 15, 15), this.scene);
 
             //setup ground
             var pillarsize = this.scene.getMeshByName("levelPillar").getBoundingInfo().boundingBox.vectorsWorld; 
             this._ground = <GroundMesh> Mesh.CreateGround('ground', 512, 512, 32, this.scene);
             this._ground.position.set(0,-Number(pillarsize[1].y-(pillarsize[0].y)),0);
             this._ground.isVisible = false;
+
+            //skybox
+            let skybox = BABYLON.MeshBuilder.CreateBox("skyBox", {size:1000.0}, this.scene);
+            let skyboxMaterial = new BABYLON.StandardMaterial("skyBox", this.scene);
+            skyboxMaterial.backFaceCulling = false;
+            skyboxMaterial.reflectionTexture = new BABYLON.CubeTexture("../assets/skybox/day", this.scene);
+            skyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
+            skyboxMaterial.diffuseColor = new BABYLON.Color3(0, 0, 0);
+            skyboxMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
+            skybox.material = skyboxMaterial;	
+
             //Setup clouds and floating islands
             var miscContainer;
             var plateformSize = this.scene.getMeshByName("platforms").getBoundingInfo().boundingBox.vectorsWorld; 
@@ -96,7 +106,7 @@ module BABYLON {
                         );
                         var miscMesh = miscContainer.meshes[Math.round(Math.random()*(miscContainer.meshes.length-1))];
 
-                        console.log(miscMesh);
+                        //console.log(miscMesh);
                         miscMesh.position=position;
                         this.scene.addMesh(miscMesh);
                     }
@@ -110,9 +120,9 @@ module BABYLON {
 
         // Create collisions
         public setupCollisions () : void {
-            var fadeClock = -1;
+            let fadeClock = -1;
             this.scene.registerBeforeRender(()=>{
-                if(fadeClock>-1 && this.fadeLevel>0 ) {this.fadeLevel-=0.01;fadeClock++;}
+                if(fadeClock>-1 && this.fadeLevel>0 ) {this.fadeLevel-=0.05;fadeClock++;}
                 if(this._character.intersectsMesh(this.scene.getMeshByName("Goal"),true))
                 {
                     if(this.gameState !="await") this.gameState = "win";
@@ -152,21 +162,20 @@ module BABYLON {
             if (pickResult.hit) {
                 console.log(" x = "+pickResult.pickedPoint.x+" y = "+pickResult.pickedPoint.z);
             }*/
+            /*
             this.scene.getMeshByName("sensorParent").getChildMeshes().forEach(sensor => {
                 sensor.isVisible = false;
-            });
+            });*/
         }
         private checkGroundCollision():boolean
         {
+            let value = false;
             this._colliders.forEach(collider => {
-                if(this._character.intersectsMesh(collider,true))
-                {
-                    this.collided = true;
-                    return true; // NO OUTPUT §!%$* !!!
-                }
+                if(this._character.intersectsMesh(collider,true))value = true;
             });
-            return false;
+            return value;
         }
+        /*
         private checkSensorCollision(): any
         {
             this.scene.getMeshByName("sensorParent").getChildMeshes().forEach(sensor => {
@@ -175,7 +184,7 @@ module BABYLON {
                     this.activeSensor = sensor;
                 }
             });
-        }
+        }*/
 
         // Setup physics
         public setupPhysics () :void {
@@ -199,8 +208,8 @@ module BABYLON {
             });
             
             //setup collisions box decor
-            var firstCollider = this.scene.getMeshByName("collide");
-            var collidersChild = firstCollider.getChildMeshes();
+            let firstCollider = this.scene.getMeshByName("collide");
+            let collidersChild = firstCollider.getChildMeshes();
             this._colliders=[...collidersChild,firstCollider];
             this._colliders.forEach(collider => {
                 collider.physicsImpostor = new BABYLON.PhysicsImpostor(collider, BABYLON.PhysicsImpostor.BoxImpostor, {
@@ -212,7 +221,9 @@ module BABYLON {
 
             //setup ground physic
             this._ground.physicsImpostor = new PhysicsImpostor(this._ground, PhysicsImpostor.BoxImpostor, {
-                mass: 0
+                mass: 0,
+                restitution:0,
+                friction:1.0
             });
         }
         // Create actions
@@ -227,11 +238,9 @@ module BABYLON {
                         switch (kbInfo.event.keyCode) {
                             // up arrow
                             case 38: 
-                                this.checkGroundCollision();
-                                if(this.collided) {
+                                if(this.checkGroundCollision()) {
                                     this._character.applyImpulse(new Vector3(0,this.JUMP_FORCE,0),this._character.position);
                                     this.scene.getSoundByName("Jump").play();
-                                    this.collided = false;
                                 }
                             break;
                             // down arrow 40
@@ -245,24 +254,20 @@ module BABYLON {
                             break;
                             //spaceBar
                             case 32:
-                                this.checkSensorCollision();
-                                if(this.activeSensor)
-                                {
-                                    //ROTATE CAMERA BASED ON THE POSITION OF THE SENSOR
-                                    // this.getRotationSignFromSensor(this.activeSensor)*
-                                    var rotationAngle =  this.getRotationSignFromSensor(this.activeSensor)*Math.PI/2;
-                                    this.inputUnlocked = false;
-                                    rotateAnimation.setKeys([
-                                        {frame: 0, value:this._camera.alpha},
-                                        {frame: 30, value:this._camera.alpha+rotationAngle},
-                                    ]);
-                                    this.scene.beginDirectAnimation(this._camera, [rotateAnimation],0,30,false, 1.0,()=>{this.inputUnlocked= true;});
-                                    //ROTATE CHARACTER
-                                    this._character.rotate(new BABYLON.Vector3(0,1,0),-rotationAngle,BABYLON.Space.LOCAL);
-                                    //ROTATE DIRECTIONAL VECTOR
-                                    this.strentghVector = BABYLON.Vector3.TransformCoordinates(this.strentghVector, BABYLON.Matrix.RotationAxis(BABYLON.Axis.Y, -rotationAngle));
-                                    this.activeSensor = null;
-                                }
+
+                                //ROTATE CAMERA BASED ON THE POSITION OF THE character
+                                // this.getRotationSignFromSensor(this.activeSensor)*
+                                let rotationAngle =  this.getRotationSignFromCharaPosition()*Math.PI/2;
+                                this.inputUnlocked = false;
+                                rotateAnimation.setKeys([
+                                    {frame: 0, value:this._camera.alpha},
+                                    {frame: 30, value:this._camera.alpha+rotationAngle},
+                                ]);
+                                this.scene.beginDirectAnimation(this._camera, [rotateAnimation],0,30,false, 1.0,()=>{this.inputUnlocked= true;});
+                                //ROTATE CHARACTER
+                                this._character.rotate(new BABYLON.Vector3(0,1,0),-rotationAngle,BABYLON.Space.LOCAL);
+                                //ROTATE DIRECTIONAL VECTOR
+                                this.strentghVector = BABYLON.Vector3.TransformCoordinates(this.strentghVector, BABYLON.Matrix.RotationAxis(BABYLON.Axis.Y, -rotationAngle));
                             break;
                         }
                     break;
@@ -272,10 +277,10 @@ module BABYLON {
         
         }
         //return a rad angle based on
-        private getRotationSignFromSensor(sensor:AbstractMesh) :int
+        private getRotationSignFromCharaPosition() :int
         {
-            const x =sensor.position.x;
-            const z = sensor.position.z;
+            const x =this._character.position.x;
+            const z = this._character.position.z;
             const alpha = Math.abs(this._camera.alpha%(2*Math.PI)<0 ? this._camera.alpha%(2*Math.PI) + 2*Math.PI:this._camera.alpha%(2*Math.PI));
             if(alpha == 0 || alpha==2*Math.PI)
             {
@@ -311,7 +316,7 @@ module BABYLON {
             "baseColor.a = 1.0;" +
             "gl_FragColor = baseColor;" +
             "}";
-            var postProcess = new BABYLON.PostProcess("Fade", "fade", ["fadeLevel"], null, 1.0, this._camera);
+            let postProcess = new BABYLON.PostProcess("Fade", "fade", ["fadeLevel"], null, 1.0, this._camera);
             postProcess.onApply = (effect) => {
                 effect.setFloat("fadeLevel", this.fadeLevel);
             };
@@ -332,6 +337,65 @@ module BABYLON {
                 new Vector3(0, 0, size), new Vector3(0, 0.05 * size, size * 0.95)
             ], scene);
             axisZ.color = new Color3(0, 0, 1);
+        }
+        private setupTutorial() :void{
+            let tutoA = this.scene.getMeshByName("tutoA");
+            var myDynamicTexture = new BABYLON.DynamicTexture("tutoAtexture", {width:512, height:512}, this.scene,false);
+            var textureContext = myDynamicTexture.getContext();
+            var myMaterial = new BABYLON.StandardMaterial("Mat", this.scene);                    
+            myMaterial.diffuseTexture = myDynamicTexture;
+            tutoA.material = myMaterial;
+            myDynamicTexture.hasAlpha = true;
+           
+
+            var img = new Image();
+            img.src = '../assets/move2.png';
+            img.onload = function() {
+                //Add image to dynamic texture
+                textureContext.drawImage(img, 140, 290);
+                myDynamicTexture.update();
+                myDynamicTexture.drawText("Move", 180, 256, "bold 44px monospace", "red",null, true, true);
+            }
+
+
+            let tutoB = this.scene.getMeshByName("tutoB");
+            console.log(tutoB);
+            var myDynamicTextureB = new BABYLON.DynamicTexture("tutoBtexture", {width:512, height:512}, this.scene,false);
+            var textureContextB = myDynamicTextureB.getContext();
+            var myMaterialB = new BABYLON.StandardMaterial("Mat2", this.scene);                    
+            myMaterialB.diffuseTexture = myDynamicTextureB;
+            tutoB.material = myMaterialB;
+            myDynamicTextureB.hasAlpha = true;
+           
+
+            var imgB = new Image();
+            imgB.src = '../assets/rotate.png';
+            imgB.onload = function() {
+                //Add image to dynamic texture
+                textureContextB.drawImage(imgB, 140, 290);
+                myDynamicTextureB.update();
+                myDynamicTextureB.drawText("Change dimension !", 0, 256, "bold 44px monospace", "red",null, true, true);
+            }
+
+            let tutoC = this.scene.getMeshByName("tutoC");
+            console.log(tutoC);
+            var myDynamicTextureC = new BABYLON.DynamicTexture("tutoCtexture", {width:512, height:512}, this.scene,false);
+            var textureContextC = myDynamicTextureC.getContext();
+            var myMaterialC = new BABYLON.StandardMaterial("Mat3", this.scene);                    
+            myMaterialC.diffuseTexture = myDynamicTextureC;
+            tutoC.material = myMaterialC;
+            myDynamicTextureC.hasAlpha = true;
+           
+
+            var imgC = new Image();
+            imgC.src = '../assets/jump.png';
+            imgC.onload = function() {
+                //Add image to dynamic texture
+                textureContextC.drawImage(imgC, 200, 290);
+                myDynamicTextureC.update();
+                myDynamicTextureC.drawText("Jump !", 180, 256, "bold 44px monospace", "red",null, true, true);
+            }
+            
         }
     }
 }
