@@ -30,7 +30,7 @@ var BABYLON;
                 _this.sounds.push(new BABYLON.Sound("Jump", "../assets/boing.mp3", _this.scene));
                 _this.sounds.push(new BABYLON.Sound("Win", "../assets/gong.mp3", _this.scene));
                 _this.sounds.push(new BABYLON.Sound("Lose", "../assets/lose.mp3", _this.scene));
-                _this.showAxis(7, _this.scene);
+                //this.showAxis(7,this.scene);
             });
         }
         /**
@@ -79,29 +79,37 @@ var BABYLON;
             skyboxMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
             skybox.material = skyboxMaterial;
             //Setup clouds and floating islands
+            var width = 20;
             var miscContainer;
             var plateformSize = this.scene.getMeshByName("platforms").getBoundingInfo().boundingBox.vectorsWorld;
-            var plateformMaxWidth = Math.max(Number(plateformSize[1].x - (plateformSize[0].x)), Number(plateformSize[1].y - (plateformSize[0].y))) + 2;
-            console.log(plateformMaxWidth);
-            var totalLength = plateformMaxWidth * 3;
-            var offset = -(totalLength) * 2 / 3;
+            var pWidth = Math.max(Number(plateformSize[1].x - (plateformSize[0].x)), Number(plateformSize[1].y - (plateformSize[0].y)));
             BABYLON.SceneLoader.LoadAssetContainer("../assets/", "misc.babylon", this.scene, function (container) {
                 miscContainer = container;
-                //var startValue = -plateformMaxWidth
-                for (var i = 0; i < 9; i++) {
-                    var areaLength = plateformMaxWidth;
-                    if (i % 2 == 0 && i != 4) {
-                        var marker = BABYLON.Mesh.CreateGround('ground' + i, areaLength, areaLength, 32, _this.scene);
-                        marker.position.set(plateformMaxWidth * (i % 3 ? 3 : 0) + offset, 0, plateformMaxWidth * ((i > 5) ? 3 : 1) + offset);
-                        if (true) //Math.random()>0.2
-                         {
-                            var position = new BABYLON.Vector3(BABYLON.Scalar.RandomRange(plateformMaxWidth * (i % 3 ? 3 : 0) + offset, plateformMaxWidth + plateformMaxWidth * (i % 3 ? 3 : 0) + offset), BABYLON.Scalar.RandomRange(0, 2), BABYLON.Scalar.RandomRange(plateformMaxWidth * ((i > 5) ? 3 : 1) + offset, plateformMaxWidth + plateformMaxWidth * ((i > 5) ? 3 : 1) + offset));
-                            var miscMesh = miscContainer.meshes[Math.round(Math.random() * (miscContainer.meshes.length - 1))];
-                            miscMesh.position = position;
-                            _this.scene.addMesh(miscMesh);
-                        }
-                    }
-                }
+                var placeElement = function (x, z) {
+                    /*
+                    let position = new BABYLON.Vector3(
+                        BABYLON.Scalar.RandomRange(minX,maxX),
+                        BABYLON.Scalar.RandomRange(-2,2),
+                        BABYLON.Scalar.RandomRange(minZ,maxZ)
+                    );*/
+                    var index = Math.round(Math.random() * (miscContainer.meshes.length - 1));
+                    var miscMesh = miscContainer.meshes[index];
+                    console.log(miscContainer.meshes);
+                    console.log(miscContainer.meshes.length);
+                    var newMesh = miscMesh.createInstance(miscMesh.name + x * z);
+                    _this.scene.addMesh(newMesh);
+                    newMesh.position = new BABYLON.Vector3(x, BABYLON.Scalar.RandomRange(-4, 5), z);
+                };
+                //good ol" CC , failed to solve the equation !§%&$
+                /*
+                placeElement(-width/2,-width/2-pWidth,-width/2,-width/2-pWidth);
+                placeElement(width/2-pWidth,width/2,-width/2,-width/2-pWidth);
+                placeElement(-width/2,width/2-pWidth,width/2-pWidth,width/2);
+                placeElement(width/2-pWidth,width/2-pWidth,width/2,width/2);*/
+                placeElement(8, 9);
+                placeElement(-5, -6);
+                placeElement(-8, 7);
+                placeElement(6, -9);
             });
         };
         // Create collisions
@@ -324,6 +332,7 @@ var BABYLON;
             ], scene);
             axisZ.color = new BABYLON.Color3(0, 0, 1);
         };
+        //very dirty, should improve.
         Main.prototype.setupTutorial = function () {
             var tutoA = this.scene.getMeshByName("tutoA");
             var myDynamicTexture = new BABYLON.DynamicTexture("tutoAtexture", { width: 512, height: 512 }, this.scene, false);
