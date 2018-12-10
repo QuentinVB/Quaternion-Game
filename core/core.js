@@ -30,7 +30,7 @@ var BABYLON;
                 _this.sounds.push(new BABYLON.Sound("Jump", "../assets/boing.mp3", _this.scene));
                 _this.sounds.push(new BABYLON.Sound("Win", "../assets/gong.mp3", _this.scene));
                 _this.sounds.push(new BABYLON.Sound("Lose", "../assets/lose.mp3", _this.scene));
-                //this.showAxis(7,this.scene);
+                _this.showAxis(7, _this.scene);
             });
         }
         /**
@@ -81,21 +81,28 @@ var BABYLON;
             //Setup clouds and floating islands
             var miscContainer;
             var plateformSize = this.scene.getMeshByName("platforms").getBoundingInfo().boundingBox.vectorsWorld;
-            var plateformMaxWidth = Math.max(Number(plateformSize[1].x - (plateformSize[0].x)), Number(plateformSize[1].y - (plateformSize[0].y)));
+            var plateformMaxWidth = Math.max(Number(plateformSize[1].x - (plateformSize[0].x)), Number(plateformSize[1].y - (plateformSize[0].y))) + 2;
+            console.log(plateformMaxWidth);
+            var totalLength = plateformMaxWidth * 3;
+            var offset = -(totalLength) * 2 / 3;
             BABYLON.SceneLoader.LoadAssetContainer("../assets/", "misc.babylon", this.scene, function (container) {
                 miscContainer = container;
-                var startValue = -plateformMaxWidth;
+                //var startValue = -plateformMaxWidth
                 for (var i = 0; i < 9; i++) {
-                    if (Math.random() > 0.5) {
-                        var position = new BABYLON.Vector3(BABYLON.Scalar.RandomRange(-10, 10), BABYLON.Scalar.RandomRange(0, 2), BABYLON.Scalar.RandomRange(-10, 10));
-                        var miscMesh = miscContainer.meshes[Math.round(Math.random() * (miscContainer.meshes.length - 1))];
-                        //console.log(miscMesh);
-                        miscMesh.position = position;
-                        _this.scene.addMesh(miscMesh);
+                    var areaLength = plateformMaxWidth;
+                    if (i % 2 == 0 && i != 4) {
+                        var marker = BABYLON.Mesh.CreateGround('ground' + i, areaLength, areaLength, 32, _this.scene);
+                        marker.position.set(plateformMaxWidth * (i % 3 ? 3 : 0) + offset, 0, plateformMaxWidth * ((i > 5) ? 3 : 1) + offset);
+                        if (true) //Math.random()>0.2
+                         {
+                            var position = new BABYLON.Vector3(BABYLON.Scalar.RandomRange(plateformMaxWidth * (i % 3 ? 3 : 0) + offset, plateformMaxWidth + plateformMaxWidth * (i % 3 ? 3 : 0) + offset), BABYLON.Scalar.RandomRange(0, 2), BABYLON.Scalar.RandomRange(plateformMaxWidth * ((i > 5) ? 3 : 1) + offset, plateformMaxWidth + plateformMaxWidth * ((i > 5) ? 3 : 1) + offset));
+                            var miscMesh = miscContainer.meshes[Math.round(Math.random() * (miscContainer.meshes.length - 1))];
+                            miscMesh.position = position;
+                            _this.scene.addMesh(miscMesh);
+                        }
                     }
                 }
             });
-            // miscMeshes = meshes.filter((value)=>{value.name == "cloud"});
         };
         // Create collisions
         Main.prototype.setupCollisions = function () {
@@ -281,7 +288,7 @@ var BABYLON;
                 if (x > 0 && z < 0)
                     return +1; //A
             }
-            return 1;
+            return 0;
         };
         Main.prototype.setupPostProcess = function () {
             var _this = this;
@@ -334,7 +341,7 @@ var BABYLON;
                 myDynamicTexture.drawText("Move", 180, 256, "bold 44px monospace", "red", null, true, true);
             };
             var tutoB = this.scene.getMeshByName("tutoB");
-            console.log(tutoB);
+            //console.log(tutoB);
             var myDynamicTextureB = new BABYLON.DynamicTexture("tutoBtexture", { width: 512, height: 512 }, this.scene, false);
             var textureContextB = myDynamicTextureB.getContext();
             var myMaterialB = new BABYLON.StandardMaterial("Mat2", this.scene);
@@ -350,7 +357,7 @@ var BABYLON;
                 myDynamicTextureB.drawText("Change dimension !", 0, 256, "bold 44px monospace", "red", null, true, true);
             };
             var tutoC = this.scene.getMeshByName("tutoC");
-            console.log(tutoC);
+            //console.log(tutoC);
             var myDynamicTextureC = new BABYLON.DynamicTexture("tutoCtexture", { width: 512, height: 512 }, this.scene, false);
             var textureContextC = myDynamicTextureC.getContext();
             var myMaterialC = new BABYLON.StandardMaterial("Mat3", this.scene);
