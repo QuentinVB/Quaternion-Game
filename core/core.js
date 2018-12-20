@@ -1,3 +1,4 @@
+//import Helpers from './helpers';
 var BABYLON;
 (function (BABYLON) {
     var Main = /** @class */ (function () {
@@ -30,7 +31,7 @@ var BABYLON;
                 _this.sounds.push(new BABYLON.Sound("Jump", "../assets/boing.mp3", _this.scene));
                 _this.sounds.push(new BABYLON.Sound("Win", "../assets/gong.mp3", _this.scene));
                 _this.sounds.push(new BABYLON.Sound("Lose", "../assets/lose.mp3", _this.scene));
-                //this.showAxis(7,this.scene);
+                Helpers.showAxis(7, _this.scene);
             });
         }
         /**

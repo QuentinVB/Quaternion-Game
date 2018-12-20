@@ -1,3 +1,4 @@
+//import Helpers from './helpers';
 module BABYLON {
     export class Main {
         // Public members
@@ -36,7 +37,8 @@ module BABYLON {
                 this.sounds.push(new BABYLON.Sound("Jump", "../assets/boing.mp3", this.scene));
                 this.sounds.push(new BABYLON.Sound("Win", "../assets/gong.mp3", this.scene));
                 this.sounds.push(new BABYLON.Sound("Lose", "../assets/lose.mp3", this.scene));
-                //this.showAxis(7,this.scene);
+
+                Helpers.showAxis(7,this.scene);
             });
         }
         /**
