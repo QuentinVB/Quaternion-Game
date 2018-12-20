@@ -1,26 +1,32 @@
+///<reference path='../libs/babylon.d.ts'/>
 //import Helpers from './helpers';
 module BABYLON {
     export class Main {
         // Public members
         public engine: Engine;
         public scene: Scene;
+        //private
         private _camera: ArcFollowCamera = null;
         private _character: Mesh = null;
         private _ground: Mesh = null;
         private _colliders: AbstractMesh[]= null;
-        private readonly MAX_VELOCITY =1.5;
-        private readonly TERMINAL_VELOCITY = 20;
-        private readonly JUMP_FORCE = 4;
-        private readonly SPEED = 3;
-        private readonly STARTSTATE = {camera:[3*Math.PI/2, 0,10],player: [1.3, 2, -1.6],strentgh:[-this.SPEED,0,0]};
         private strentghVector;
         private inputUnlocked = true;
-        //private activeSensor:AbstractMesh=null;
         private sounds =  [];
         private fadeLevel = 1.0;
 
         private gameState = "";
 
+        //const
+        private readonly MAX_VELOCITY =1.5;
+        private readonly TERMINAL_VELOCITY = 20;
+        private readonly JUMP_FORCE = 4;
+        private readonly SPEED = 3;
+        private readonly STARTSTATE = {
+            camera:[3*Math.PI/2, 0,10],
+            player: [1.3, 2, -1.6],
+            strentgh:[-this.SPEED,0,0]};
+        
         // Constructor
         constructor (scene: Scene) {
             this.engine = new Engine(<HTMLCanvasElement> document.getElementById('renderCanvas'));
@@ -38,7 +44,7 @@ module BABYLON {
                 this.sounds.push(new BABYLON.Sound("Win", "../assets/gong.mp3", this.scene));
                 this.sounds.push(new BABYLON.Sound("Lose", "../assets/lose.mp3", this.scene));
 
-                Helpers.showAxis(7,this.scene);
+               // Helpers.showAxis(7,this.scene);
             });
         }
         /**
@@ -172,10 +178,6 @@ module BABYLON {
             if (pickResult.hit) {
                 console.log(" x = "+pickResult.pickedPoint.x+" y = "+pickResult.pickedPoint.z);
             }*/
-            /*
-            this.scene.getMeshByName("sensorParent").getChildMeshes().forEach(sensor => {
-                sensor.isVisible = false;
-            });*/
         }
         private checkGroundCollision():boolean
         {
@@ -185,17 +187,6 @@ module BABYLON {
             });
             return value;
         }
-        /*
-        private checkSensorCollision(): any
-        {
-            this.scene.getMeshByName("sensorParent").getChildMeshes().forEach(sensor => {
-                if(this._character.intersectsMesh(sensor,true))
-                {
-                    this.activeSensor = sensor;
-                }
-            });
-        }*/
-
         // Setup physics
         public setupPhysics () :void {
             //character
