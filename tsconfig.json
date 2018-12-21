@@ -1,7 +1,17 @@
 {
     "compilerOptions": {
+        "module": "amd",
         "target": "es5",
+        "declaration": true,
+        "noImplicitAny": false,
         "sourceMap": true,
-        "declaration": false
+        "outDir": "core"
     },
+    "include": [
+        "./src/**/*"
+    ],
+    "exclude": [
+        "./node_modules",
+        "./core"
+    ]
 }

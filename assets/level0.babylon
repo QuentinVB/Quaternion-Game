@@ -2,7 +2,8 @@
 "autoClear":true,"clearColor":[0.0077,0.5243,0.6267],"ambientColor":[0,0,0],"gravity":[0,-9.81,0],
 "materials":[{"name":"level0.Material","id":"level0.Material","ambient":[1,0.4761,0.0792],"diffuse":[1,0.4761,0.0792],"specular":[1,0.8244,0.1481],"emissive":[0,0,0],"specularPower":50,"alpha":1,"backFaceCulling":true,"checkReadyOnlyOnce":false,"maxSimultaneousLights":4},
 {"name":"level0.stone","id":"level0.stone","ambient":[0.8,0.6219,0.2695],"diffuse":[0.8,0.6219,0.2695],"specular":[0.05,0.05,0.05],"emissive":[0,0,0],"specularPower":50,"alpha":1,"backFaceCulling":true,"checkReadyOnlyOnce":false,"maxSimultaneousLights":4, 
-"diffuseTexture":{"name":"stonetexture.png","level":1,"hasAlpha":1,"coordinatesMode":0,"uOffset":0,"vOffset":0,"uScale":5,"vScale":5,"uAng":0,"vAng":0,"wAng":0,"wrapU":1,"wrapV":1,"coordinatesIndex":0}},
+"diffuseTexture":{"name":"stonetexture.png","level":1,"hasAlpha":1,"coordinatesMode":0,"uOffset":0,"vOffset":0,"uScale":5,"vScale":5,"uAng":0,"vAng":0,"wAng":0,"wrapU":1,"wrapV":1,"coordinatesIndex":0}, 
+"bumpTexture":{"name":"stonetexture-bump.png","level":2.3793,"hasAlpha":0,"coordinatesMode":0,"uOffset":0,"vOffset":0,"uScale":5,"vScale":5,"uAng":0,"vAng":0,"wAng":0,"wrapU":1,"wrapV":1,"coordinatesIndex":0}},
 {"name":"level0.leafs","id":"level0.leafs","ambient":[0.0069,0.0637,0.001],"diffuse":[0.0069,0.0637,0.001],"specular":[0,0,0],"emissive":[0,0,0],"specularPower":50,"alpha":1,"backFaceCulling":true,"checkReadyOnlyOnce":false,"maxSimultaneousLights":4},
 {"name":"level0.wood","id":"level0.wood","ambient":[0.0668,0.0165,0.0059],"diffuse":[0.0668,0.0165,0.0059],"specular":[0.05,0.05,0.05],"emissive":[0,0,0],"specularPower":14,"alpha":1,"backFaceCulling":true,"checkReadyOnlyOnce":false,"maxSimultaneousLights":4},
 {"name":"level0.ground","id":"level0.ground","ambient":[0.9551,0.1227,0.0496],"diffuse":[0.9551,0.1227,0.0496],"specular":[0,0,0],"emissive":[0,0,0],"specularPower":323,"alpha":1,"backFaceCulling":true,"checkReadyOnlyOnce":false,"maxSimultaneousLights":4, 
@@ -10,7 +11,7 @@
 {"name":"level0.grass","id":"level0.grass","ambient":[0.0519,0.3032,0.0123],"diffuse":[0.0519,0.3032,0.0123],"specular":[0.5,0.5,0.5],"emissive":[0,0,0],"specularPower":50,"alpha":1,"backFaceCulling":true,"checkReadyOnlyOnce":false,"maxSimultaneousLights":4}],
 "multiMaterials":[{"name":"level0.Multimaterial#0","id":"level0.Multimaterial#0","materials":["level0.leafs","level0.wood"]},{"name":"level0.Multimaterial#1","id":"level0.Multimaterial#1","materials":["level0.ground","level0.grass"]}],
 "skeletons":[],
-"meshes":[{"name":"tutoC","id":"tutoC","billboardMode":0,"position":[-1.4213,2.9865,-0.0626],"rotation":[-1.5708,1.5708,0],"scaling":[1,1,1],"isVisible":true,"freezeWorldMatrix":false,"isEnabled":true,"checkCollisions":false,"receiveShadows":false,"pickable":true,"tags":""
+"meshes":[{"name":"start","id":"start","position":[1.5111,2.2777,-1.5],"rotation":[0,0,0],"scaling":[1,1,1],"isVisible":false,"isEnabled":true,"checkCollisions":false,"billboardMode":0,"receiveShadows":false,"tags":""},{"name":"tutoC","id":"tutoC","billboardMode":0,"position":[-1.4213,2.9865,-0.0626],"rotation":[-1.5708,1.5708,0],"scaling":[1,1,1],"isVisible":true,"freezeWorldMatrix":false,"isEnabled":true,"checkCollisions":false,"receiveShadows":false,"pickable":true,"tags":""
 ,"positions":[1,0,-1,-1,0,1,-1,0,-1,1,0,1]
 ,"normals":[0,1,0,0,1,0,0,1,0,0,1,0]
 ,"uvs":[1,0,0,1,0,0,1,1]
