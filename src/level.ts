@@ -3,6 +3,7 @@ import Helpers from 'helpers'
 import {Character,Ground,Skybox,Misc} from 'actors'
 import Tutorial from 'tutorial'
 import Main from './main';
+import * as States from './states/index';
 
 export default class Level {
     //public
@@ -13,8 +14,11 @@ export default class Level {
     public _colliders: BABYLON.AbstractMesh[];
     public _skybox :BABYLON.Mesh;
     public env:Main;
+    public gameState:States.AbstractState;
+    public strengthVector;
+    public fadeLevel = 1.0;
+    public postProcess:BABYLON.PostProcess;
     //private
-    private strengthVector;
     private sounds =  [];
 
     constructor(levelname:String,env:Main)
@@ -41,6 +45,13 @@ export default class Level {
 
             //actions
             this.setupActions();
+
+            //post Processing
+            this.setupPostProcess();
+
+            //initilize the State Machine
+            this.gameState = new States.Default(this.env);
+            this.scene.registerBeforeRender(()=>{this.gameState.Update()});
 
             //add tutorial if level0
             if(levelname = "level0") Tutorial(this.scene);
@@ -73,9 +84,6 @@ export default class Level {
         //skybox
         this._skybox = Skybox.create(this.env);
         
-        //initilize the State Machine
-        //define an enum !
-
         //setup Misc decoration
         Misc.create(this.env);
     }
@@ -101,7 +109,6 @@ export default class Level {
                     break;
                     // left arrow
                     case 37:
-                        console.log("left");
                         this._character.physicsImpostor.applyImpulse(this.strengthVector,this._character.position);
                     break;
                     // right arrow
@@ -127,13 +134,14 @@ export default class Level {
             }
         });
         //actions from mouse
+        /*
+        //FOR DEBUG ONLY
         this.scene.onPointerDown = (evt, pickResult) => {
             // if the click hits the ground object, we change the impact position
             if (pickResult.hit) {
                 console.log(" x = "+pickResult.pickedPoint.x+" y = "+pickResult.pickedPoint.z);
             }
-            //this.env.loadLevel("level1");
-        }
+        }*/
     }
 
     
@@ -159,5 +167,22 @@ export default class Level {
             if(this._character.intersectsMesh(collider,true))value = true;
         });
         return value;
+    }
+    private setupPostProcess() :void
+    {
+        BABYLON.Effect.ShadersStore["fadePixelShader"] =
+        "precision highp float;" +
+        "varying vec2 vUV;" +
+        "uniform sampler2D textureSampler; " +
+        "uniform float fadeLevel; " +
+        "void main(void){" +
+        "vec4 baseColor = texture2D(textureSampler, vUV) * fadeLevel;" +
+        "baseColor.a = 1.0;" +
+        "gl_FragColor = baseColor;" +
+        "}";
+        this.postProcess = new BABYLON.PostProcess("Fade", "fade", ["fadeLevel"], null, 1.0, this._camera);
+        this.postProcess.onApply = (effect) => {
+            effect.setFloat("fadeLevel", this.fadeLevel);
+        };
     }
 }
