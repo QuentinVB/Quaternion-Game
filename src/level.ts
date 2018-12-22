@@ -2,6 +2,7 @@
 import Helpers from 'helpers'
 import {Character,Ground,Skybox,Misc} from 'actors'
 import Tutorial from 'tutorial'
+import Main from './main';
 
 export default class Level {
     //public
@@ -9,14 +10,14 @@ export default class Level {
     public _camera: BABYLON.ArcFollowCamera;
     public _character: BABYLON.Mesh;
     public _ground: BABYLON.Mesh;
-    private _colliders: BABYLON.AbstractMesh[];
+    public _colliders: BABYLON.AbstractMesh[];
     public _skybox :BABYLON.Mesh;
+    public env:Main;
     //private
-    private env;
     private strengthVector;
     private sounds =  [];
 
-    constructor(levelname:String,env)
+    constructor(levelname:String,env:Main)
     {
         BABYLON.SceneLoader.LoadAsync("../assets/", levelname+".babylon", env.engine).then((scene)=>
         {
@@ -100,6 +101,7 @@ export default class Level {
                     break;
                     // left arrow
                     case 37:
+                        console.log("left");
                         this._character.physicsImpostor.applyImpulse(this.strengthVector,this._character.position);
                     break;
                     // right arrow
@@ -158,6 +160,4 @@ export default class Level {
         });
         return value;
     }
-
-    
 }

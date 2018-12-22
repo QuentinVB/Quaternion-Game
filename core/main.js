@@ -4,8 +4,9 @@ define(["require", "exports", "level"], function (require, exports, level_1) {
     var Main = /** @class */ (function () {
         // Constructor
         function Main() {
-            this.fadeLevel = 1.0;
             this.inputUnlocked = true;
+            // private members
+            this.fadeLevel = 1.0;
             //const
             this.MAX_VELOCITY = 1.5;
             this.TERMINAL_VELOCITY = 20;
@@ -17,7 +18,8 @@ define(["require", "exports", "level"], function (require, exports, level_1) {
             };
             this.engine = new BABYLON.Engine(document.getElementById('renderCanvas'));
             //TODO : load a scene with common elements such as sounds
-            this.loadLevel("level0");
+            this.level = new level_1.default("level0", this);
+            //this.loadLevel();
         }
         /**
          * Runs the engine to render the level into the canvas

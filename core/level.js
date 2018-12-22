@@ -68,6 +68,7 @@ define(["require", "exports", "helpers", "actors", "tutorial"], function (requir
                             break;
                         // left arrow
                         case 37:
+                            console.log("left");
                             _this._character.physicsImpostor.applyImpulse(_this.strengthVector, _this._character.position);
                             break;
                         // right arrow

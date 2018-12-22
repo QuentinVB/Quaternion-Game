@@ -1,15 +1,16 @@
 /// <reference path="../libs/babylon.d.ts" />
+import Main from './main';
 export default class Level {
     scene: BABYLON.Scene;
     _camera: BABYLON.ArcFollowCamera;
     _character: BABYLON.Mesh;
     _ground: BABYLON.Mesh;
-    private _colliders;
+    _colliders: BABYLON.AbstractMesh[];
     _skybox: BABYLON.Mesh;
-    private env;
+    env: Main;
     private strengthVector;
     private sounds;
-    constructor(levelname: String, env: any);
+    constructor(levelname: String, env: Main);
     private setupMeshes;
     private setupActions;
     private setupCollisions;

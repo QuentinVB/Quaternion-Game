@@ -2,15 +2,18 @@
 import Level from 'level';
 export default class Main {
     level: Level;
-    private engine;
+    engine: BABYLON.Engine;
+    inputUnlocked: boolean;
     private fadeLevel;
     private postProcess;
-    private inputUnlocked;
-    private readonly MAX_VELOCITY;
-    private readonly TERMINAL_VELOCITY;
-    private readonly JUMP_FORCE;
-    private readonly SPEED;
-    private readonly STARTSTATE;
+    readonly MAX_VELOCITY: number;
+    readonly TERMINAL_VELOCITY: number;
+    readonly JUMP_FORCE: number;
+    readonly SPEED: number;
+    readonly STARTSTATE: {
+        camera: number[];
+        strength: number[];
+    };
     constructor();
     /**
      * Runs the engine to render the level into the canvas
