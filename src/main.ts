@@ -19,15 +19,15 @@ export default class Main {
         camera:[3*Math.PI/2, 0,10],
         strength:[-this.SPEED,0,0]
     }
-    public readonly TRANSITIONDURATION = 5;//sec
+    public readonly TRANSITIONDURATION = 7;//sec
     
     
     
     // Constructor
     constructor () {
         this.engine = new BABYLON.Engine(<HTMLCanvasElement> document.getElementById('renderCanvas'));
-        //TODO : load a scene with common elements such as sounds
-        this.loadLevel("level0");
+        //TODO : load a scene with common elements such as sounds, this to play the sound between loading
+        this.loadLevel("level1");
     }
     /**
      * Runs the engine to render the level into the canvas
@@ -40,6 +40,8 @@ export default class Main {
     public loadLevel(levelname) //MUST BE ASYNC !
     {
         if(this.level) this.level.scene.dispose();
+        this.engine.stopRenderLoop();
         this.level = new Level(levelname,this);
+        this.run();
     }
 }

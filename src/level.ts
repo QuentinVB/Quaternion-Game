@@ -15,7 +15,7 @@ export default class Level {
     public _skybox :BABYLON.Mesh;
     public env:Main;
     public gameState:States.AbstractState;
-    public strengthVector;
+    public strengthVector:BABYLON.Vector3;
     public fadeLevel = 1.0;
     public postProcess:BABYLON.PostProcess;
     //private
@@ -54,7 +54,7 @@ export default class Level {
             this.scene.registerBeforeRender(()=>{this.gameState.Update()});
 
             //add tutorial if level0
-            if(levelname = "level0") Tutorial(this.scene);
+            if(levelname == "level0") Tutorial(this.scene);
 
             Helpers.showAxis(7,this.scene);
         });
@@ -150,14 +150,14 @@ export default class Level {
     {
         //setup collisions box from decor
         let firstCollider = this.scene.getMeshByName("collide");
-        let collidersChild = firstCollider.getChildMeshes();
+        let collidersChild = firstCollider.getChildMeshes()?firstCollider.getChildMeshes():[];
         this._colliders=[...collidersChild,firstCollider];
         this._colliders.forEach(collider => {
             collider.physicsImpostor = new BABYLON.PhysicsImpostor(collider, BABYLON.PhysicsImpostor.BoxImpostor, {
                 mass: 0,
                 friction:1.0
             });
-            collider.isVisible = false;
+            //collider.isVisible = false;
         });
     }
     private checkGroundCollision():boolean
