@@ -13,7 +13,7 @@ export default class Main {
     //const
     public readonly MAX_VELOCITY =1.5;
     public readonly TERMINAL_VELOCITY = 20;
-    public readonly JUMP_FORCE = 4;
+    public readonly JUMP_FORCE = 6; //default 4
     public readonly SPEED = 3;
     public readonly STARTSTATE = {
         camera:[3*Math.PI/2, 0,10],
@@ -21,13 +21,14 @@ export default class Main {
     }
     public readonly TRANSITIONDURATION = 7;//sec
     
+    public oldLevel: Level;
     
     
     // Constructor
     constructor () {
         this.engine = new BABYLON.Engine(<HTMLCanvasElement> document.getElementById('renderCanvas'));
         //TODO : load a scene with common elements such as sounds, this to play the sound between loading
-        this.loadLevel("level1");
+        this.loadLevel("level0");
     }
     /**
      * Runs the engine to render the level into the canvas
@@ -39,9 +40,8 @@ export default class Main {
     }
     public loadLevel(levelname) //MUST BE ASYNC !
     {
-        if(this.level) this.level.scene.dispose();
         this.engine.stopRenderLoop();
+        console.log("renderloopstoped");
         this.level = new Level(levelname,this);
-        this.run();
     }
 }

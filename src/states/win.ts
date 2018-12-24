@@ -24,10 +24,7 @@ export default class StateWin extends AbstractState{
             this.context.level.fadeLevel= parseFloat(this.context.level.fadeLevel.toPrecision(3));
             this.fadeClock++;
         }
-        console.log( this.context.level.fadeLevel);
-        //TODO load next level !
         if(this.fadeClock>= this.context.TRANSITIONDURATION*10) this.context.loadLevel("level1");
-        
     }
     public Trigger():void
     {

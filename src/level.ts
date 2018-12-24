@@ -25,6 +25,7 @@ export default class Level {
     {
         BABYLON.SceneLoader.LoadAsync("../assets/", levelname+".babylon", env.engine).then((scene)=>
         {
+            scene.activeCamera=scene.getCameraByName("BlenderCamera");
             this.scene = scene;
             this.env = env;
 
@@ -39,6 +40,7 @@ export default class Level {
 
             //meshes
             this.setupMeshes();
+            console.log("setup meshes");
 
             //collisions
             this.setupCollisions();
@@ -56,6 +58,11 @@ export default class Level {
             //add tutorial if level0
             if(levelname == "level0") Tutorial(this.scene);
 
+            //run the rendering
+            console.log("relaunch renderloop");
+            this.env.run();
+            this.env.inputUnlocked = true;
+
             Helpers.showAxis(7,this.scene);
         });
     }
@@ -67,6 +74,7 @@ export default class Level {
     {
         //setup camera
         this._camera = new BABYLON.ArcFollowCamera("ArcCamera", this.env.STARTSTATE.camera[0],this.env.STARTSTATE.camera[1],this.env.STARTSTATE.camera[2],this.scene.getMeshByName("collide"), this.scene);
+        console.log("set active camera");
         this.scene.activeCamera = this._camera;
 
         //setup character
@@ -95,14 +103,17 @@ export default class Level {
 
         //define the camera rotation animation
         const rotateAnimation = new BABYLON.Animation('rotation','alpha',25,BABYLON.Animation.ANIMATIONTYPE_FLOAT,BABYLON.Animation.ANIMATIONLOOPMODE_RELATIVE);
+        console.log("loading key event");
 
         //actions from keys
         this.scene.onKeyboardObservable.add((kbInfo) => {
+            console.log("unlock : "+this.env.inputUnlocked);
             if(this.env.inputUnlocked && kbInfo.type==BABYLON.KeyboardEventTypes.KEYDOWN){
                 switch (kbInfo.event.keyCode) {
                     // up arrow
                     case 38: 
                     if(this.checkGroundCollision()) {
+                        console.log(this._character);
                         this._character.applyImpulse(new BABYLON.Vector3(0,this.env.JUMP_FORCE,0),this._character.position);
                         this.scene.getSoundByName("Jump").play();
                     }
@@ -119,6 +130,7 @@ export default class Level {
                     case 32:
                         //ROTATE CAMERA BASED ON THE POSITION OF THE character
                         let rotationAngle =  Helpers.getRotationSignFromCharaPosition(this._character,this._camera)*Math.PI/2;
+                        console.log(rotationAngle);
                         this.env.inputUnlocked = false;
                         rotateAnimation.setKeys([
                             {frame: 0, value:this._camera.alpha},
@@ -150,21 +162,31 @@ export default class Level {
     {
         //setup collisions box from decor
         let firstCollider = this.scene.getMeshByName("collide");
-        let collidersChild = firstCollider.getChildMeshes()?firstCollider.getChildMeshes():[];
+        let collidersChild = firstCollider.getChildMeshes();
         this._colliders=[...collidersChild,firstCollider];
         this._colliders.forEach(collider => {
             collider.physicsImpostor = new BABYLON.PhysicsImpostor(collider, BABYLON.PhysicsImpostor.BoxImpostor, {
                 mass: 0,
                 friction:1.0
             });
-            //collider.isVisible = false;
+            collider.isVisible = false;
         });
+
+        //setup Collision from bascules
+        let bascule = this.scene.getMeshByName("bascule");
+        if(bascule != null)
+        {
+            bascule.physicsImpostor = new BABYLON.PhysicsImpostor(bascule, BABYLON.PhysicsImpostor.BoxImpostor, {
+                mass: 0,
+                friction:1.0
+            });
+        }
     }
     private checkGroundCollision():boolean
     {
         let value = false;
         this._colliders.forEach(collider => {
-            if(this._character.intersectsMesh(collider,true))value = true;
+            if(this._character.intersectsMesh(collider,true)) value = true;
         });
         return value;
     }
