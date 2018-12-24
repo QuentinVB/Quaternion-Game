@@ -4,12 +4,10 @@ import Level from 'level'
 export default class Main {
     //public
     public level: Level;
+    public canvas: ;
     public engine: BABYLON.Engine;
     public inputUnlocked = true;
     
-
-    
-
     //const
     public readonly MAX_VELOCITY =1.5;
     public readonly TERMINAL_VELOCITY = 20;
@@ -26,9 +24,11 @@ export default class Main {
     
     // Constructor
     constructor () {
-        this.engine = new BABYLON.Engine(<HTMLCanvasElement> document.getElementById('renderCanvas'));
+        this.canvas = <HTMLCanvasElement> document.getElementById('renderCanvas')
+        this.engine = new BABYLON.Engine(this.canvas);
         //TODO : load a scene with common elements such as sounds, this to play the sound between loading
         this.loadLevel("level0");
+        
     }
     /**
      * Runs the engine to render the level into the canvas
@@ -40,8 +40,10 @@ export default class Main {
     }
     public loadLevel(levelname) //MUST BE ASYNC !
     {
+        this.canvas.blur();
         this.engine.stopRenderLoop();
         console.log("renderloopstoped");
         this.level = new Level(levelname,this);
+        this.canvas.focus();
     }
 }

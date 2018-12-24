@@ -113,7 +113,6 @@ export default class Level {
                     // up arrow
                     case 38: 
                     if(this.checkGroundCollision()) {
-                        console.log(this._character);
                         this._character.applyImpulse(new BABYLON.Vector3(0,this.env.JUMP_FORCE,0),this._character.position);
                         this.scene.getSoundByName("Jump").play();
                     }
@@ -130,7 +129,6 @@ export default class Level {
                     case 32:
                         //ROTATE CAMERA BASED ON THE POSITION OF THE character
                         let rotationAngle =  Helpers.getRotationSignFromCharaPosition(this._character,this._camera)*Math.PI/2;
-                        console.log(rotationAngle);
                         this.env.inputUnlocked = false;
                         rotateAnimation.setKeys([
                             {frame: 0, value:this._camera.alpha},
@@ -146,10 +144,12 @@ export default class Level {
             }
         });
         //actions from mouse
-        /*
+        
         //FOR DEBUG ONLY
+        /*
         this.scene.onPointerDown = (evt, pickResult) => {
             // if the click hits the ground object, we change the impact position
+            this._character.applyImpulse(new BABYLON.Vector3(0,this.env.JUMP_FORCE,0),this._character.position);
             if (pickResult.hit) {
                 console.log(" x = "+pickResult.pickedPoint.x+" y = "+pickResult.pickedPoint.z);
             }
