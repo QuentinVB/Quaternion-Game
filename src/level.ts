@@ -4,22 +4,28 @@ import {Character,Ground,Skybox,Misc} from 'actors'
 import Tutorial from 'tutorial'
 import Main from './main';
 import * as States from './states/index';
+import Map1 from './maps/map1';
+import Map from './maps/map';
 
 export default class Level {
     //public
     public scene: BABYLON.Scene;
+    public env:Main;
+    public map:Map;
+
     public _camera: BABYLON.ArcFollowCamera;
     public _character: BABYLON.Mesh;
     public _ground: BABYLON.Mesh;
     public _colliders: BABYLON.AbstractMesh[];
     public _skybox :BABYLON.Mesh;
-    public env:Main;
     public gameState:States.AbstractState;
     public strengthVector:BABYLON.Vector3;
     public fadeLevel = 1.0;
     public postProcess:BABYLON.PostProcess;
+
     //private
     private sounds =  [];
+    private rotateAnimation = new BABYLON.Animation('rotation','alpha',25,BABYLON.Animation.ANIMATIONTYPE_FLOAT,BABYLON.Animation.ANIMATIONLOOPMODE_RELATIVE);
 
     constructor(levelname:String,env:Main)
     {
@@ -33,14 +39,12 @@ export default class Level {
             this.sounds.push(new BABYLON.Sound("Jump", "../assets/boing.mp3", this.scene));
             this.sounds.push(new BABYLON.Sound("Win", "../assets/gong.mp3", this.scene));
             this.sounds.push(new BABYLON.Sound("Lose", "../assets/lose.mp3", this.scene));
-    
 
             //activate physic
             this.scene.enablePhysics(new BABYLON.Vector3(0, -9.81, 0), new BABYLON.CannonJSPlugin());
 
             //meshes
             this.setupMeshes();
-            console.log("setup meshes");
 
             //collisions
             this.setupCollisions();
@@ -58,12 +62,14 @@ export default class Level {
             //add tutorial if level0
             if(levelname == "level0") Tutorial(this.scene);
 
+            if(levelname == "level1") this.map = new Map1(this.env);
+            
+            if(this.env.oldLevel)this.env.oldLevel.scene.dispose();
             //run the rendering
-            console.log("relaunch renderloop");
             this.env.run();
             this.env.inputUnlocked = true;
 
-            Helpers.showAxis(7,this.scene);
+            //Helpers.showAxis(7,this.scene);
         });
     }
 
@@ -74,7 +80,6 @@ export default class Level {
     {
         //setup camera
         this._camera = new BABYLON.ArcFollowCamera("ArcCamera", this.env.STARTSTATE.camera[0],this.env.STARTSTATE.camera[1],this.env.STARTSTATE.camera[2],this.scene.getMeshByName("collide"), this.scene);
-        console.log("set active camera");
         this.scene.activeCamera = this._camera;
 
         //setup character
@@ -101,13 +106,8 @@ export default class Level {
         //define the strength vector
         this.strengthVector = new BABYLON.Vector3(...this.env.STARTSTATE.strength);
 
-        //define the camera rotation animation
-        const rotateAnimation = new BABYLON.Animation('rotation','alpha',25,BABYLON.Animation.ANIMATIONTYPE_FLOAT,BABYLON.Animation.ANIMATIONLOOPMODE_RELATIVE);
-        console.log("loading key event");
-
         //actions from keys
         this.scene.onKeyboardObservable.add((kbInfo) => {
-            console.log("unlock : "+this.env.inputUnlocked);
             if(this.env.inputUnlocked && kbInfo.type==BABYLON.KeyboardEventTypes.KEYDOWN){
                 switch (kbInfo.event.keyCode) {
                     // up arrow
@@ -129,34 +129,31 @@ export default class Level {
                     case 32:
                         //ROTATE CAMERA BASED ON THE POSITION OF THE character
                         let rotationAngle =  Helpers.getRotationSignFromCharaPosition(this._character,this._camera)*Math.PI/2;
-                        this.env.inputUnlocked = false;
-                        rotateAnimation.setKeys([
+                        //this.env.inputUnlocked = false;
+                        this.rotateAnimation.setKeys([
                             {frame: 0, value:this._camera.alpha},
                             {frame: 30, value:this._camera.alpha+rotationAngle},
                         ]);
-                        this.scene.beginDirectAnimation(this._camera, [rotateAnimation],0,30,false, 1.0,()=>{this.env.inputUnlocked= true;});
+                        this.scene.beginDirectAnimation(this._camera, [this.rotateAnimation],0,30,false, 1.0,()=>{this.env.inputUnlocked= true;});
                         //ROTATE CHARACTER
                         this._character.rotate(new BABYLON.Vector3(0,1,0),-rotationAngle,BABYLON.Space.LOCAL);
                         //ROTATE DIRECTIONAL VECTOR
                         this.strengthVector = BABYLON.Vector3.TransformCoordinates(this.strengthVector, BABYLON.Matrix.RotationAxis(BABYLON.Axis.Y, -rotationAngle));
-                break;
+                    break;
                 }
             }
         });
         //actions from mouse
         
         //FOR DEBUG ONLY
-        /*
         this.scene.onPointerDown = (evt, pickResult) => {
             // if the click hits the ground object, we change the impact position
-            this._character.applyImpulse(new BABYLON.Vector3(0,this.env.JUMP_FORCE,0),this._character.position);
+            
             if (pickResult.hit) {
                 console.log(" x = "+pickResult.pickedPoint.x+" y = "+pickResult.pickedPoint.z);
             }
-        }*/
+        }
     }
-
-    
 
     private setupCollisions()
     {
@@ -171,16 +168,6 @@ export default class Level {
             });
             collider.isVisible = false;
         });
-
-        //setup Collision from bascules
-        let bascule = this.scene.getMeshByName("bascule");
-        if(bascule != null)
-        {
-            bascule.physicsImpostor = new BABYLON.PhysicsImpostor(bascule, BABYLON.PhysicsImpostor.BoxImpostor, {
-                mass: 0,
-                friction:1.0
-            });
-        }
     }
     private checkGroundCollision():boolean
     {

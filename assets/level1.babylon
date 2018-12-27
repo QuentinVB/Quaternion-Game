@@ -11,7 +11,7 @@
 {"name":"level1.gold","id":"level1.gold","ambient":[1,0.4761,0.0792],"diffuse":[1,0.4761,0.0792],"specular":[1,0.8244,0.1481],"emissive":[0,0,0],"specularPower":50,"alpha":1,"backFaceCulling":true,"checkReadyOnlyOnce":false,"maxSimultaneousLights":4}],
 "multiMaterials":[{"name":"level1.Multimaterial#0","id":"level1.Multimaterial#0","materials":["level1.leafs","level1.wood"]},{"name":"level1.Multimaterial#1","id":"level1.Multimaterial#1","materials":["level1.ground","level1.grass"]}],
 "skeletons":[],
-"meshes":[{"name":"start","id":"start","position":[0,-0.4672,-1.4942],"rotation":[0,0,0],"scaling":[1,1,1],"isVisible":false,"isEnabled":true,"checkCollisions":false,"billboardMode":0,"receiveShadows":false,"tags":""},{"name":"bascule","id":"bascule","materialId":"level1.wood","billboardMode":0,"position":[-1.5,-0.0699,-0.0034],"rotation":[0,0,0],"scaling":[1,1,1],"isVisible":true,"freezeWorldMatrix":false,"isEnabled":true,"checkCollisions":false,"receiveShadows":false,"pickable":true,"tags":""
+"meshes":[{"name":"grid.001","id":"grid.001","position":[1.5118,0.2662,-0.9281],"rotation":[0,0,0],"scaling":[1,1,1],"isVisible":false,"isEnabled":true,"checkCollisions":false,"billboardMode":0,"receiveShadows":false,"tags":""},{"name":"start","id":"start","position":[0,-0.4672,-1.4942],"rotation":[0,0,0],"scaling":[1,1,1],"isVisible":false,"isEnabled":true,"checkCollisions":false,"billboardMode":0,"receiveShadows":false,"tags":""},{"name":"bascule","id":"bascule","materialId":"level1.wood","billboardMode":0,"position":[-1.5,-0.0699,-0.0034],"rotation":[0,0,0],"scaling":[1,1,1],"isVisible":true,"freezeWorldMatrix":false,"isEnabled":true,"checkCollisions":false,"receiveShadows":false,"pickable":true,"tags":""
 ,"positions":[0.4442,-0.078,0.9994,-0.4442,0.078,0.9994,0.4442,0.078,0.9994,-0.4442,0.078,-0.9994,0.4442,-0.078,-0.9994,0.4442,0.078,-0.9994,-0.4442,-0.078,0.9994,-0.4442,-0.078,-0.9994]
 ,"normals":[0.577,-0.577,0.577,-0.577,0.577,0.577,0.577,0.577,0.577,-0.577,0.577,-0.577,0.577,-0.577,-0.577,0.577,0.577,-0.577,-0.577,-0.577,0.577,-0.577,-0.577,-0.577]
 ,"uvs":[0.432,0.336,0.36,0.368,0.432,0.368,0.36,0.368,0.432,0.336,0.432,0.368,0.36,0.336,0.36,0.336]
@@ -20,22 +20,19 @@
 ,"animations":[{"dataType":1,"framePerSecond":24,"keys":[
 {"frame":0,"values":[0,0,0]},
 {"frame":60,"values":[0,0,0]},
-{"frame":70,"values":[0,0,0]},
+{"frame":120,"values":[0,0,0]},
 {"frame":130,"values":[0,0,0]},
-{"frame":141,"values":[0.3665,0,0]},
-{"frame":200,"values":[-0.5934,0,0]}],"loopBehavior":1,"name":"rotation animation","property":"rotation"},{"dataType":1,"framePerSecond":24,"keys":[
+{"frame":190,"values":[0,0,0]}],"loopBehavior":1,"name":"rotation animation","property":"rotation"},{"dataType":1,"framePerSecond":24,"keys":[
 {"frame":0,"values":[-1.5,-0.0699,-0.0034]},
 {"frame":60,"values":[-1.5,-0.8372,-0.0034]},
-{"frame":70,"values":[-1.5,-0.0699,-0.0034]},
-{"frame":130,"values":[-1.5,1.1606,-0.0034]},
-{"frame":141,"values":[-1.5,0.008,-1]},
-{"frame":200,"values":[-1.5,0.008,-1]}],"loopBehavior":1,"name":"position animation","property":"position"},{"dataType":1,"framePerSecond":24,"keys":[
+{"frame":120,"values":[-1.5,-0.0699,-0.0034]},
+{"frame":130,"values":[-1.5,-0.0699,-0.0034]},
+{"frame":190,"values":[-1.5,1.1606,-0.0034]}],"loopBehavior":1,"name":"position animation","property":"position"},{"dataType":1,"framePerSecond":24,"keys":[
 {"frame":0,"values":[1,1,1]},
 {"frame":60,"values":[1,1,1]},
-{"frame":70,"values":[1,1,1]},
+{"frame":120,"values":[1,1,1]},
 {"frame":130,"values":[1,1,1]},
-{"frame":141,"values":[1,1,1]},
-{"frame":200,"values":[1,1,1]}],"loopBehavior":1,"name":"scaling animation","property":"scaling"}],"ranges":[{"name":"basculeActionDOWN","from":0,"to":60},{"name":"basculeActionUP","from":70,"to":130},{"name":"basculeToggle","from":140,"to":200}]
+{"frame":190,"values":[1,1,1]}],"loopBehavior":1,"name":"scaling animation","property":"scaling"}],"ranges":[{"name":"basculeActionDOWN","from":0,"to":120},{"name":"basculeActionUP","from":130,"to":190}]
 ,"instances":[]}
 ,{"name":"tree","id":"tree","materialId":"level1.Multimaterial#0","billboardMode":0,"position":[0.5,4,0.5],"rotation":[0,0,0],"scaling":[1,1,1],"isVisible":true,"freezeWorldMatrix":false,"isEnabled":true,"checkCollisions":false,"receiveShadows":false,"pickable":true,"tags":""
 ,"positions":[-0.9571,1.3574,-0.9571,0.9571,1.3574,0.9571,0.9571,1.3574,-0.9571,-0.9571,1.8574,-0.9571,-0.4785,1.8574,0.4785,-0.9571,1.8574,0.9571,-0.9571,1.3574,0.9571,0.9571,1.8574,-0.9571,0.9571,1.8574,0.9571,0.4785,1.8574,-0.4785,-0.4785,2.4574,-0.4785,-0.4785,1.8574,-0.4785,0.4785,1.8574,0.4785,0.4785,2.4574,0.4785,0.4785,2.4574,-0.4785,-0.4785,2.4574,0.4785,-0.1259,1.3574,0.1259
