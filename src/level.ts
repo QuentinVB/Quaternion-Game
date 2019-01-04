@@ -134,6 +134,7 @@ export default class Level {
                             {frame: 0, value:this._camera.alpha},
                             {frame: 30, value:this._camera.alpha+rotationAngle},
                         ]);
+                        this.env.inputUnlocked=false;
                         this.scene.beginDirectAnimation(this._camera, [this.rotateAnimation],0,30,false, 1.0,()=>{this.env.inputUnlocked= true;});
                         //ROTATE CHARACTER
                         this._character.rotate(new BABYLON.Vector3(0,1,0),-rotationAngle,BABYLON.Space.LOCAL);
@@ -148,7 +149,6 @@ export default class Level {
         //FOR DEBUG ONLY
         this.scene.onPointerDown = (evt, pickResult) => {
             // if the click hits the ground object, we change the impact position
-            
             if (pickResult.hit) {
                 console.log(" x = "+pickResult.pickedPoint.x+" y = "+pickResult.pickedPoint.z);
             }

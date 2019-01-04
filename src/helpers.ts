@@ -1,4 +1,8 @@
 ///<reference path='../libs/babylon.d.ts'/>
+
+import { AbstractMesh } from "babylonjs";
+
+
 export default class Helpers{
     public static showAxis(size:number,scene:BABYLON.Scene) {
         var axisX = BABYLON.Mesh.CreateLines("axisX", [
@@ -46,6 +50,39 @@ export default class Helpers{
             if(x > 0 && z < 0 ) return +1;//A
         }
         return 0;
+    }
+    /**
+     * Place meshes in a scene based on empty obj and apply actions
+     */
+    public static ItemPlacer(scene:BABYLON.Scene,itemName:String,additionnalOperation?:(scene:BABYLON.Scene,mesh:BABYLON.AbstractMesh) => void):BABYLON.AbstractMesh[]{
+        var outputMeshes:BABYLON.AbstractMesh[]=[];
+        let markers = scene.meshes.filter(mesh=>{
+            if(mesh.name.substr(0,itemName.length)==itemName)return mesh; 
+        });
+        console.log(markers);
+        if(markers.length>0)
+        {
+            var meshcontainer;
+            BABYLON.SceneLoader.LoadAssetContainer("../assets/", itemName+".babylon", scene, (container)=> {
+                meshcontainer = container;
+                let element:BABYLON.Mesh= meshcontainer.meshes[0];
+                markers.forEach((marker,index)=>{
+                    let mesh:AbstractMesh = element.createInstance(itemName+"."+index);
+                    scene.addMesh(mesh);
+                    mesh.position=marker.position;
+                    mesh.rotation=marker.rotation;
+                    mesh.physicsImpostor = new BABYLON.PhysicsImpostor(mesh, BABYLON.PhysicsImpostor.BoxImpostor, {
+                        mass: 0,
+                        friction:1.0
+                    });
+           
+                    //if(itemName="elevator") scene.beginDirectAnimation(mesh, [mesh.animations[1]],0, 120, true);
+                    if(additionnalOperation)additionnalOperation(scene,mesh);
+                    outputMeshes.push(mesh);
+                });
+            });
+        }
+        return outputMeshes;
     }
 }
 

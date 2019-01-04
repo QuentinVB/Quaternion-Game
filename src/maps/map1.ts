@@ -2,7 +2,6 @@
 
 import Map from "./map";
 
-
 export default class Map1 extends Map{
     constructor(context)
     {

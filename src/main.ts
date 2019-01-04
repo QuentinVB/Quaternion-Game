@@ -11,7 +11,7 @@ export default class Main {
     //const
     public readonly MAX_VELOCITY =1.5;
     public readonly TERMINAL_VELOCITY = 20;
-    public readonly JUMP_FORCE = 7; //default 4
+    public readonly JUMP_FORCE = 8; //default 4
     public readonly SPEED = 3;
     public readonly STARTSTATE = {
         camera:[3*Math.PI/2, 0,10],

@@ -1,35 +1,22 @@
 ///<reference path='../../libs/babylon.d.ts'/>
 
 import Main from "../main";
-import { AbstractMesh } from "babylonjs";
+import { AbstractMesh, Mesh } from "babylonjs";
+import Helpers from "../helpers";
 
 export default abstract class Map{
     protected context:Main;
     protected triggers:[];
-
+    protected doors:AbstractMesh[]
+    protected elevators:AbstractMesh[]
     constructor(context:Main)
     {
-        this.context = context;
-        this.loadingGrids();
+        this.context=context;
+        this.elevators=Helpers.ItemPlacer(this.context.level.scene,"elevator",(scene,elevator)=>{
+            console.log(elevator);
+            //scene.beginDirectAnimation(elevator, [elevator.animations[1]],0, 120, true);
+        });
+        this.doors=Helpers.ItemPlacer(this.context.level.scene,"door");
     }
     public abstract Trigger(triggerName:String):void;
-    protected loadingGrids(){
-        //setup bascules
-        let bascules = this.context.level.scene.meshes.filter((mesh,index,array)=>{
-            if(mesh.name.substr(0,7)=="bascule"){ console.log("added"); return mesh; }
-        });
-        if(bascules.length>0)
-        {
-            bascules.forEach((bascule)=>{
-                bascule.physicsImpostor = new BABYLON.PhysicsImpostor(bascule, BABYLON.PhysicsImpostor.BoxImpostor, {
-                    mass: 0,
-                    friction:1.0
-                });
-                this.context.level.scene.beginDirectAnimation(bascule, [bascule.animations[1]],0, 120, true);
-                //bascule.animations
-            });
-
-            console.log(bascules);
-        }
-    }
 }
